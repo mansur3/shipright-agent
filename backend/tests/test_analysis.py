@@ -139,3 +139,9 @@ class TestFreezeWatchR7:
         by = {x["cnf_code"]: x for x in r["imbalance"]}
         assert by["CF-E01"]["flag"] == "HOLDS MORE THAN ITS SHARE" and by["CF-N02"]["flag"] == "SHORT FOR ITS DEMAND"
         assert "capacity" in r["godown_capacity"].lower() and "not" in r["godown_capacity"].lower()
+
+    def test_the_answer_is_worded_in_the_policy_units(self):
+        r = A.freeze_watch()
+        msg = r["message"]
+        assert "60-day" in msg and "180 days to expiry" in msg and "150 days to expiry" in msg
+        assert r["as_of"] in msg

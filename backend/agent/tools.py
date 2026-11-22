@@ -82,7 +82,8 @@ def validate_claim(stockist_code: str, batch_no: str, qty_claimed: float, claim_
 def get_at_risk_stock(cnf_code: str = "", days_threshold: int = 90) -> dict:
     """Stock on hand at the latest month-end whose expiry is within days_threshold days, by C&F, at PTS, with whether it can sell before the 60-day block.
     An empty list is a real answer: it means nothing on hand today is that close to expiry. Earlier months are history, not stock on hand.
-    Use for expiring stock, inventory risk or batches to destroy."""
+    The result also has freeze_watch: batches within 120 and 90 days of the 60-day dispatch freeze (180 and 150 days to expiry) and regional imbalance; quote its
+    `message` for any question about the freeze. Use for expiring stock, inventory risk or batches to destroy."""
     r = analysis.at_risk_stock(int(days_threshold), cnf_code.strip().upper())
     if not r["batches"]:
         r["message"] = f"No stock on hand at {r['as_of']} expires within {days_threshold} days."

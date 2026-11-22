@@ -298,8 +298,12 @@ def freeze_watch(cnf: str = "") -> dict:
             flag = "SHORT FOR ITS DEMAND"
         imb.append({"cnf_code": x["cnf_code"], "share_of_stock_pct": x["share_of_stock_pct"], "share_of_outward_pct": x["share_of_outward_pct"],
                     "stock_to_demand_ratio": round(ratio, 2) if ratio is not None else None, "cover_months": x["cover_months"], "flag": flag})
-    return {"as_of": r_wide["as_of"], "freeze_days": P.FREEZE_DAYS, "clause": "CO-POL-014 7.1, 7.2 (p5)",
-            "within_90_days_of_freeze": band(r_narrow, narrow), "within_120_days_of_freeze": band(r_wide, wide),
+    n90, n120 = band(r_narrow, narrow), band(r_wide, wide)
+    msg = (f"At {r_wide['as_of']}: {n120['batches']} batch(es), INR {n120['value_inr']:,.0f} at PTS, are within 120 days of the 60-day dispatch freeze "
+           f"(180 days to expiry or fewer), and {n90['batches']} batch(es), INR {n90['value_inr']:,.0f}, are within 90 days of it (150 days to expiry or fewer). "
+           "Stock already under 60 days to expiry is a destruction case, not a watch item.")
+    return {"as_of": r_wide["as_of"], "freeze_days": P.FREEZE_DAYS, "clause": "CO-POL-014 7.1, 7.2 (p5)", "message": msg,
+            "within_90_days_of_freeze": n90, "within_120_days_of_freeze": n120,
             "imbalance": imb,
             "imbalance_rule": f"heavy at {P.IMBALANCE_HEAVY}x or more of its share of outward, short at {P.IMBALANCE_SHORT}x or less",
             "godown_capacity": "Godown capacity is not in the extracts, so a capacity percentage (for example a godown at 96% full) cannot be measured; the imbalance above uses stock share against outward share.",
