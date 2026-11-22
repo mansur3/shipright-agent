@@ -1,0 +1,6 @@
+backend/public
+backend/tests
+backend/.venv
+backend/db/*.db
+frontend/node_modules
+frontend/.next*
