@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+/* ── Theme tokens (Tailwind v4 CSS-first config) ────────────────────────────
+   Defining `--color-*` here generates matching utilities (bg-canvas, text-ink,
+   border-line, text-brand, bg-ok/10, etc.) and `--shadow-glow` → `shadow-glow`. */
+@theme {
+  --color-canvas: #0a0d14;
+  --color-panel: #111520;
+  --color-raised: #181d2b;
+  --color-line: #1e2535;
+  --color-brand: #2563eb;
+  --color-cyan: #0ea5e9;
+  --color-ok: #10b981;
+  --color-warn: #f59e0b;
+  --color-danger: #ef4444;
+  --color-ink: #e2e8f0;
+  --color-ink2: #94a3b8;
+  --color-ink3: #475569;
+
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+
+  --shadow-glow: 0 0 12px #2563eb44;
+}
+
+@layer base {
+  html {
+    font-size: 14px;
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+  }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+  }
+}
+
+/* ── Scrollbars ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2a3346;
+}
+
+/* ── Reusable scrollable data table (sticky headers + max height) ─────────── */
+.dt-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  position: relative;
+}
+.dt-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.dt-table th {
+  background: var(--color-raised);
+  color: var(--color-ink2);
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 500;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid var(--color-line);
+}
+.dt-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--color-line);
+  white-space: nowrap;
+  color: var(--color-ink);
+}
+.dt-table tbody tr:hover td {
+  background: var(--color-raised);
+}
+.dt-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Chat bubbles ──────────────────────────────────────────────────────────── */
+.bubble-user {
+  background: var(--color-brand);
+  color: #fff;
+  align-self: flex-end;
+}
+.bubble-ai {
+  background: var(--color-raised);
+  border: 1px solid var(--color-line);
+  align-self: flex-start;
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.fade-in {
+  animation: fadeIn 0.18s ease;
+}
+
+/* Recharts dark-theme tooltip override */
+.recharts-default-tooltip {
+  background: var(--color-panel) !important;
+  border: 1px solid var(--color-line) !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+}
+.recharts-tooltip-label,
+.recharts-tooltip-item {
+  color: var(--color-ink) !important;
+}

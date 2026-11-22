@@ -1,0 +1,163 @@
+<svg viewBox="0 0 900 920" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI',system-ui,sans-serif">
+  <defs>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#475569"/>
+    </marker>
+    <marker id="ar-g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#10b981"/>
+    </marker>
+    <marker id="ar-r" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#ef4444"/>
+    </marker>
+    <marker id="ar-b" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#2563eb"/>
+    </marker>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#00000040"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="920" rx="12" fill="#0a0d14"/>
+
+  <text x="450" y="38" text-anchor="middle" fill="#e2e8f0" font-size="17" font-weight="700">Sankalp AI — Claims Agent Workflow</text>
+  <text x="450" y="56" text-anchor="middle" fill="#475569" font-size="11">LangGraph StateGraph · 3 parallel workflows · 14 nodes · Pydantic-validated</text>
+
+  <!-- ── START ── -->
+  <ellipse cx="450" cy="96" rx="44" ry="20" fill="#1e2535" stroke="#2563eb" stroke-width="2"/>
+  <text x="450" y="101" text-anchor="middle" fill="#2563eb" font-size="12" font-weight="700">START</text>
+  <line x1="450" y1="116" x2="450" y2="142" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- ── classify_intent ── -->
+  <rect x="290" y="144" width="320" height="56" rx="8" fill="#111520" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+  <text x="450" y="166" text-anchor="middle" fill="#2563eb" font-size="13" font-weight="700">classify_intent</text>
+  <text x="450" y="182" text-anchor="middle" fill="#94a3b8" font-size="10">Keyword check → LLM fallback · Pydantic IntentResult</text>
+
+  <!-- ── Three parallel branches ── -->
+
+  <!-- Branch A: create_claim -->
+  <line x1="290" y1="172" x2="140" y2="172" stroke="#475569" stroke-width="1.5"/>
+  <line x1="140" y1="172" x2="140" y2="210" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="200" y="166" fill="#10b981" font-size="10" font-weight="600">create_claim</text>
+
+  <!-- Branch B: check_status -->
+  <line x1="450" y1="200" x2="450" y2="210" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="460" y="208" fill="#0ea5e9" font-size="10" font-weight="600">check_status</text>
+
+  <!-- Branch C: recovery_check -->
+  <line x1="610" y1="172" x2="760" y2="172" stroke="#475569" stroke-width="1.5"/>
+  <line x1="760" y1="172" x2="760" y2="210" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="630" y="166" fill="#f59e0b" font-size="10" font-weight="600">recovery_check</text>
+
+  <!-- ════ WORKFLOW A: CREATE CLAIM ═════════════════════════════════════════ -->
+
+  <!-- gather_info -->
+  <rect x="40" y="212" width="200" height="56" rx="8" fill="#111520" stroke="#10b981" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="234" text-anchor="middle" fill="#10b981" font-size="12" font-weight="700">gather_info</text>
+  <text x="140" y="250" text-anchor="middle" fill="#94a3b8" font-size="9">Regex extract · 6 required fields</text>
+  <line x1="140" y1="268" x2="140" y2="286" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- Diamond: missing fields? -->
+  <polygon points="140,288 200,318 140,348 80,318" fill="#1e2535" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="140" y="316" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="600">fields</text>
+  <text x="140" y="328" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="600">missing?</text>
+
+  <!-- ask_user (missing) → END -->
+  <line x1="80" y1="318" x2="40" y2="318" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ar-r)"/>
+  <text x="30" y="356" fill="#ef4444" font-size="9" text-anchor="end">yes → ask</text>
+  <rect x="20" y="360" width="120" height="40" rx="6" fill="#ef444418" stroke="#ef4444" stroke-width="1"/>
+  <text x="80" y="376" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">ask_user</text>
+  <text x="80" y="390" text-anchor="middle" fill="#ef4444" font-size="9">"I need stockist_code"</text>
+  <line x1="80" y1="400" x2="80" y2="870" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <text x="30" y="430" fill="#ef4444" font-size="9" transform="rotate(-90,30,430)">→ END (wait next turn)</text>
+
+  <!-- all present → validate_guard -->
+  <line x1="140" y1="348" x2="140" y2="376" stroke="#10b981" stroke-width="1.5" marker-end="url(#ar-g)"/>
+  <text x="150" y="368" fill="#10b981" font-size="9">no</text>
+
+  <!-- validate_guard -->
+  <rect x="40" y="378" width="200" height="56" rx="8" fill="#1e2535" stroke="#f59e0b" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="400" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">validate_guard</text>
+  <text x="140" y="416" text-anchor="middle" fill="#94a3b8" font-size="9">Pydantic ClaimCreate · type + injection check</text>
+  <line x1="140" y1="434" x2="140" y2="452" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- Diamond: validation ok? -->
+  <polygon points="140,454 200,484 140,514 80,484" fill="#1e2535" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="140" y="482" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="600">valid?</text>
+
+  <!-- invalid → ask_user_error → END -->
+  <line x1="200" y1="484" x2="260" y2="484" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ar-r)"/>
+  <text x="210" y="478" fill="#ef4444" font-size="9">fail</text>
+  <rect x="260" y="462" width="130" height="44" rx="6" fill="#ef444418" stroke="#ef4444" stroke-width="1"/>
+  <text x="325" y="478" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">ask_user_error</text>
+  <text x="325" y="492" text-anchor="middle" fill="#ef4444" font-size="9">"Date format invalid"</text>
+
+  <!-- valid → validate_against_data -->
+  <line x1="140" y1="514" x2="140" y2="538" stroke="#10b981" stroke-width="1.5" marker-end="url(#ar-g)"/>
+  <text x="150" y="530" fill="#10b981" font-size="9">ok</text>
+
+  <!-- validate_against_data -->
+  <rect x="20" y="540" width="240" height="68" rx="8" fill="#111520" stroke="#0ea5e9" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="562" text-anchor="middle" fill="#0ea5e9" font-size="12" font-weight="700">validate_against_data</text>
+  <text x="140" y="578" text-anchor="middle" fill="#94a3b8" font-size="9">batch_exists · claim_window · qty_check</text>
+  <text x="140" y="592" text-anchor="middle" fill="#94a3b8" font-size="9">duplicate_check · risk_score · recovery_calc</text>
+  <line x1="140" y1="608" x2="140" y2="624" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- store_claim -->
+  <rect x="40" y="626" width="200" height="56" rx="8" fill="#111520" stroke="#10b981" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="648" text-anchor="middle" fill="#10b981" font-size="12" font-weight="700">store_claim</text>
+  <text x="140" y="664" text-anchor="middle" fill="#94a3b8" font-size="9">SQLite insert · UserClaim table</text>
+  <line x1="140" y1="682" x2="140" y2="698" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- respond -->
+  <rect x="40" y="700" width="200" height="56" rx="8" fill="#111520" stroke="#2563eb" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="722" text-anchor="middle" fill="#2563eb" font-size="12" font-weight="700">respond</text>
+  <text x="140" y="738" text-anchor="middle" fill="#94a3b8" font-size="9">claim_no + risk + value + recovery</text>
+  <line x1="140" y1="756" x2="140" y2="860" stroke="#10b981" stroke-width="1.5" marker-end="url(#ar-g)"/>
+
+  <!-- ════ WORKFLOW B: CHECK STATUS ═══════════════════════════════════════════ -->
+
+  <!-- lookup_claims -->
+  <rect x="350" y="212" width="200" height="56" rx="8" fill="#111520" stroke="#0ea5e9" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="450" y="234" text-anchor="middle" fill="#0ea5e9" font-size="12" font-weight="700">lookup_claims</text>
+  <text x="450" y="250" text-anchor="middle" fill="#94a3b8" font-size="9">SQLite query · WHERE user = current</text>
+  <line x1="450" y1="268" x2="450" y2="290" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- format_status -->
+  <rect x="350" y="292" width="200" height="56" rx="8" fill="#111520" stroke="#2563eb" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="450" y="314" text-anchor="middle" fill="#2563eb" font-size="12" font-weight="700">format_status</text>
+  <text x="450" y="330" text-anchor="middle" fill="#94a3b8" font-size="9">claim_no · status · value · recovery</text>
+  <line x1="450" y1="348" x2="450" y2="860" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- ════ WORKFLOW C: RECOVERY CHECK ══════════════════════════════════════════ -->
+
+  <!-- compute_recovery -->
+  <rect x="660" y="212" width="200" height="56" rx="8" fill="#111520" stroke="#f59e0b" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="760" y="234" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">compute_recovery</text>
+  <text x="760" y="250" text-anchor="middle" fill="#94a3b8" font-size="9">batch_run + user_claims → benchmark</text>
+  <line x1="760" y1="268" x2="760" y2="290" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- respond_benchmark -->
+  <rect x="660" y="292" width="200" height="56" rx="8" fill="#111520" stroke="#2563eb" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="760" y="314" text-anchor="middle" fill="#2563eb" font-size="12" font-weight="700">respond_benchmark</text>
+  <text x="760" y="330" text-anchor="middle" fill="#94a3b8" font-size="9">recovered vs recoverable table</text>
+  <line x1="760" y1="348" x2="760" y2="860" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- ════ END ─═ -->
+  <ellipse cx="450" cy="878" rx="44" ry="20" fill="#1e2535" stroke="#10b981" stroke-width="2"/>
+  <text x="450" y="883" text-anchor="middle" fill="#10b981" font-size="12" font-weight="700">END</text>
+
+  <!-- ── Chat persistence annotation ── -->
+  <rect x="500" y="540" width="280" height="68" rx="8" fill="#111520" stroke="#475569" stroke-width="1" opacity="0.7"/>
+  <text x="640" y="560" text-anchor="middle" fill="#475569" font-size="11" font-weight="600">Chat Persistence (parallel)</text>
+  <text x="640" y="576" text-anchor="middle" fill="#475569" font-size="10">_save_chat() → ChatSession + ChatMessage</text>
+  <text x="640" y="590" text-anchor="middle" fill="#475569" font-size="10">Per-user: session_id + username isolation</text>
+  <line x1="390" y1="574" x2="500" y2="574" stroke="#475569" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#ar)"/>
+
+  <!-- ── Legend ── -->
+  <rect x="40" y="900" width="820" height="12" fill="none"/>
+  <text x="60" y="911" fill="#10b981" font-size="9">● create_claim workflow</text>
+  <text x="220" y="911" fill="#0ea5e9" font-size="9">● check_status workflow</text>
+  <text x="380" y="911" fill="#f59e0b" font-size="9">● recovery_check workflow</text>
+  <text x="540" y="911" fill="#ef4444" font-size="9">● blocked / error path</text>
+  <text x="660" y="911" fill="#475569" font-size="9">● chat persistence (parallel)</text>
+</svg>

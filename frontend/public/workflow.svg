@@ -1,0 +1,126 @@
+<svg viewBox="0 0 760 820" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI',system-ui,sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#475569"/>
+    </marker>
+    <marker id="arr-r" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#ef4444"/>
+    </marker>
+    <marker id="arr-g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#10b981"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#00000040"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="760" height="820" rx="12" fill="#0a0d14"/>
+
+  <!-- Title -->
+  <text x="380" y="38" text-anchor="middle" fill="#e2e8f0" font-size="17" font-weight="700">Sankalp AI — Agent Workflow</text>
+  <text x="380" y="56" text-anchor="middle" fill="#475569" font-size="11">LangGraph StateGraph · 5 nodes · 3 guardrail gates</text>
+
+  <!-- ── START ── -->
+  <ellipse cx="380" cy="96" rx="44" ry="20" fill="#1e2535" stroke="#2563eb" stroke-width="2"/>
+  <text x="380" y="101" text-anchor="middle" fill="#2563eb" font-size="12" font-weight="700">START</text>
+  <line x1="380" y1="116" x2="380" y2="146" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ── GATE 1: input_guard ── -->
+  <rect x="230" y="148" width="300" height="58" rx="8" fill="#1e2535" stroke="#f59e0b" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="380" y="170" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">① input_guard</text>
+  <text x="380" y="187" text-anchor="middle" fill="#94a3b8" font-size="10">Prompt injection · Off-domain · Length · Encoding</text>
+  <rect x="232" y="150" width="10" height="54" rx="4" fill="#f59e0b" opacity="0.3"/>
+  <text x="244" y="181" fill="#f59e0b" font-size="9" font-weight="600" transform="rotate(-90,244,181)">GATE 1</text>
+
+  <!-- input_guard → blocked path -->
+  <line x1="230" y1="177" x2="140" y2="177" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-r)"/>
+  <rect x="60" y="158" width="78" height="40" rx="6" fill="#ef444420" stroke="#ef4444" stroke-width="1.2"/>
+  <text x="99" y="175" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="700">BLOCKED</text>
+  <text x="99" y="189" text-anchor="middle" fill="#ef4444" font-size="9">error msg</text>
+  <text x="175" y="171" fill="#ef4444" font-size="9">blocked</text>
+
+  <!-- input_guard → allowed -->
+  <line x1="380" y1="206" x2="380" y2="244" stroke="#10b981" stroke-width="1.5" marker-end="url(#arr-g)"/>
+  <text x="390" y="228" fill="#10b981" font-size="9">allowed</text>
+
+  <!-- ── MODEL node ── -->
+  <rect x="220" y="246" width="320" height="66" rx="8" fill="#111520" stroke="#2563eb" stroke-width="2" filter="url(#shadow)"/>
+  <text x="380" y="268" text-anchor="middle" fill="#2563eb" font-size="13" font-weight="700">② model</text>
+  <text x="380" y="284" text-anchor="middle" fill="#94a3b8" font-size="10">claude-haiku · tools bound · role-scoped system prompt</text>
+  <text x="380" y="299" text-anchor="middle" fill="#475569" font-size="9">Decides: answer directly OR call tool(s)</text>
+
+  <!-- model → tool_guard -->
+  <line x1="380" y1="312" x2="380" y2="358" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="390" y="338" fill="#94a3b8" font-size="9">tool_calls + trips &lt; 6</text>
+
+  <!-- ── GATE 2: tool_guard ── -->
+  <rect x="230" y="360" width="300" height="58" rx="8" fill="#1e2535" stroke="#f59e0b" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="380" y="382" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">③ tool_guard</text>
+  <text x="380" y="399" text-anchor="middle" fill="#94a3b8" font-size="10">Allowed-tool registry · Arg length · Arg injection</text>
+  <rect x="232" y="362" width="10" height="54" rx="4" fill="#f59e0b" opacity="0.3"/>
+  <text x="244" y="393" fill="#f59e0b" font-size="9" font-weight="600" transform="rotate(-90,244,393)">GATE 2</text>
+
+  <!-- tool_guard blocked → back to model -->
+  <path d="M530,389 C620,389 620,279 540,279" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2" fill="none" marker-end="url(#arr-r)"/>
+  <text x="590" y="336" fill="#ef4444" font-size="9">blocked → inject</text>
+  <text x="590" y="348" fill="#ef4444" font-size="9">error ToolMessage</text>
+
+  <!-- tool_guard → run_tools -->
+  <line x1="380" y1="418" x2="380" y2="456" stroke="#10b981" stroke-width="1.5" marker-end="url(#arr-g)"/>
+  <text x="390" y="440" fill="#10b981" font-size="9">all calls valid</text>
+
+  <!-- ── RUN_TOOLS ── -->
+  <rect x="200" y="458" width="360" height="78" rx="8" fill="#111520" stroke="#0ea5e9" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="380" y="480" text-anchor="middle" fill="#0ea5e9" font-size="13" font-weight="700">④ run_tools</text>
+  <text x="380" y="496" text-anchor="middle" fill="#94a3b8" font-size="10">lookup_batch · validate_claim · get_at_risk_stock</text>
+  <text x="380" y="510" text-anchor="middle" fill="#94a3b8" font-size="10">check_scheme_eligibility · detect_quarter_spike</text>
+  <text x="380" y="524" text-anchor="middle" fill="#475569" font-size="9">get_fill_rate · get_stockist_summary</text>
+
+  <!-- run_tools → model (loop back) -->
+  <path d="M200,497 C120,497 120,279 220,279" stroke="#475569" stroke-width="1.5" stroke-dasharray="3,2" fill="none" marker-end="url(#arr)"/>
+  <text x="82" y="378" fill="#94a3b8" font-size="9" transform="rotate(-90,82,378)">loop back</text>
+
+  <!-- model → output_guard (no tool calls) -->
+  <path d="M540,279 C660,279 660,580 530,595" stroke="#475569" stroke-width="1.5" stroke-dasharray="3,2" fill="none" marker-end="url(#arr)"/>
+  <text x="668" y="400" fill="#94a3b8" font-size="9" transform="rotate(90,668,400)">no tool_calls</text>
+  <text x="668" y="412" fill="#94a3b8" font-size="9" transform="rotate(90,668,412)">OR trips == 6</text>
+
+  <!-- run_tools → model line -->
+  <line x1="380" y1="536" x2="380" y2="566" stroke="#475569" stroke-width="1" stroke-dasharray="2,2"/>
+
+  <!-- ── GATE 3: output_guard ── -->
+  <rect x="230" y="568" width="300" height="68" rx="8" fill="#1e2535" stroke="#f59e0b" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="380" y="591" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="700">⑤ output_guard</text>
+  <text x="380" y="607" text-anchor="middle" fill="#94a3b8" font-size="10">Scrub internal paths · Truncate · Flag bare numbers</text>
+  <text x="380" y="622" text-anchor="middle" fill="#475569" font-size="9">Cap evidence to 10 items · Remove bcrypt / API keys</text>
+  <rect x="232" y="570" width="10" height="64" rx="4" fill="#f59e0b" opacity="0.3"/>
+  <text x="244" y="604" fill="#f59e0b" font-size="9" font-weight="600" transform="rotate(-90,244,604)">GATE 3</text>
+
+  <line x1="380" y1="636" x2="380" y2="672" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ── END ── -->
+  <ellipse cx="380" cy="688" rx="44" ry="20" fill="#1e2535" stroke="#10b981" stroke-width="2"/>
+  <text x="380" y="693" text-anchor="middle" fill="#10b981" font-size="12" font-weight="700">END</text>
+
+  <!-- Legend -->
+  <rect x="40" y="720" width="680" height="82" rx="8" fill="#111520" stroke="#1e2535" stroke-width="1"/>
+  <text x="380" y="740" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600">LEGEND</text>
+
+  <rect x="58" y="750" width="12" height="12" rx="2" fill="#f59e0b" opacity="0.5"/>
+  <text x="76" y="761" fill="#94a3b8" font-size="10">Guardrail gate (pure Python)</text>
+
+  <rect x="200" y="750" width="12" height="12" rx="2" fill="#2563eb" opacity="0.4"/>
+  <text x="218" y="761" fill="#94a3b8" font-size="10">LLM node</text>
+
+  <rect x="310" y="750" width="12" height="12" rx="2" fill="#0ea5e9" opacity="0.4"/>
+  <text x="328" y="761" fill="#94a3b8" font-size="10">Tool execution node</text>
+
+  <line x1="460" y1="756" x2="490" y2="756" stroke="#10b981" stroke-width="2" marker-end="url(#arr-g)"/>
+  <text x="496" y="761" fill="#94a3b8" font-size="10">Allowed path</text>
+
+  <line x1="580" y1="756" x2="610" y2="756" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,2" marker-end="url(#arr-r)"/>
+  <text x="616" y="761" fill="#94a3b8" font-size="10">Blocked path</text>
+
+  <text x="58" y="790" fill="#475569" font-size="10">Max trips: 6 · Max question: 800 chars · Max answer: 4000 chars · 7 allowed tools · LLM: claude-haiku via OpenRouter</text>
+</svg>
