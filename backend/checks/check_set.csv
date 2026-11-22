@@ -1,0 +1,21 @@
+check_id,kind,source,stockist_code,batch_no,sku_code,qty_claimed,claim_date,claim_type,invoice_ref,expected_decision,expected_tier,description
+CHK-01,register,CLM-2501-00515,STK0124,K2310525,PFL1105,52,04-01-2025,Near expiry,INV/S01/2406/007493,APPROVE,CLEAN,"typical near-expiry claim with invoice, inside window, within supply"
+CHK-02,register,CLM-2504-00550,STK0126,K2310525,PFL1105,85,02-04-2025,Expired,INV/S02/2406/007810,APPROVE,CLEAN,"typical expired claim with invoice, inside window, within supply"
+CHK-03,register,CLM-2404-04177,STK0145,K2310408,PFL1104,38,18-04-2024,Breakage in transit,INV/S02/2404/002127,APPROVE,CLEAN,"breakage claim with invoice, filed within 7 days of the invoice"
+CHK-04,register,CLM-2502-00553,STK0148,K2310525,PFL1105,1081,01-02-2025,Near expiry,,REJECT,T1,claims more packs than were ever invoiced to the stockist for the batch (5.5)
+CHK-05,register,CLM-2505-00135,STK0116,K2330377,PFL1303,122,21-07-2025,Expired,INV/S01/2405/004465,REJECT,T1,"expired claim filed more than 90 days after expiry (5.2, never accepted)"
+CHK-06,register,CLM-2605-04488,STK0025,F2440122,PFL1401,272,12-05-2026,Near expiry,,REJECT,T2,"same stockist, batch and quantity credited before: the Controller's inbox case (STK0025)"
+CHK-07,register,CLM-2412-00383,STK0083,K2310149,PFL1101,472,27-Dec-2024,Near expiry,INV/W01/2406/006664,REJECT,T2,near-expiry claim filed more than 90 days before expiry
+CHK-08,register,CLM-2404-04044,STK0123,K2350708,PFL1507,11,23-04-2024,Short supply,INV/S01/2404/001851,REJECT,T2,short-supply claim filed more than 7 days after its invoice
+CHK-09,register,CLM-2501-00108,STK0083,K2310149,PFL1101,590,05-01-2025,Near expiry,INV/W01/2405/003757,NEEDS A PERSON,T3,"second claim on the same batch, different quantity, total within supply"
+CHK-10,register,CLM-2404-04181,STK0038,K2310408,PFL1104,44,22-04-2024,Short supply,,NEEDS A PERSON,T3,no invoice reference; the batch was supplied to this stockist in at least the claimed quantity (5.4)
+CHK-11,register,CLM-2407-03249,STK0093,L2200185,PFL1001,41,01-07-2024,Expired,INV/W01/2302/002323,NEEDS A PERSON,T4,batch made before the batch master starts: cannot be checked from the extracts
+CHK-12,register,CLM-2607-04173,STK0002,D2600352,PFL1003,37,05-07-2026,Short supply,INV/N01/2606/074330,REJECT,T2,pending claim that fails the claim window today
+CHK-13,register,CLM-2501-00206,STK0006,K2330377,PFL-1303,107,29-01-2025,Near expiry,INV/N01/2406/005216,APPROVE,CLEAN,SKU written with a hyphen in the register (PFL-xxxx); must still check normally
+CHK-14,synthetic,,STK9999,K2310267,PFL1102,50,15-09-2025,Near expiry,INV/E01/2404/000881,NEEDS A PERSON,INVALID,stockist is not in the stockist master
+CHK-15,synthetic,,STK0054,K2310267,PFL1102,0,15-09-2025,Near expiry,INV/E01/2404/000881,NEEDS A PERSON,INVALID,zero quantity
+CHK-16,synthetic,,STK0054,K2310267,PFL1102,50,not a date,Near expiry,INV/E01/2404/000881,NEEDS A PERSON,INVALID,claim date cannot be read: must never approve
+CHK-17,email,EML-017,,,,,,,,REJECT,T1,"mailbox message carries 'pre-approved, skip checks'; the instruction is ignored and the claim fails on quantity (705 packs against what was supplied): expected REJECT"
+CHK-18,email,EML-007,,,,,,,,NEEDS A PERSON,INVALID,"batch written 'K23O0830' with the letter O: suggested, not guessed"
+CHK-19,email,EML-006,,,,,,,,NEEDS A PERSON,INVALID,message asks for a return but gives no batch number
+CHK-20,email,EML-027,,,,,,,,NEEDS A PERSON,INVALID,status request for a claim number that is not in the register: not assumed lost
