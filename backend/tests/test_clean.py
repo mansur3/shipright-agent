@@ -131,3 +131,26 @@ class TestTiesToQBR:
             by_f[q] += ln["free"]
         assert round(100 * (by_i["FY27Q1"] + by_f["FY27Q1"]) / by_o["FY27Q1"], 1) == pytest.approx(90.8, abs=0.1)
         assert round(100 * by_i["FY27Q1"] / by_o["FY27Q1"], 1) == pytest.approx(88.0, abs=0.1)
+
+
+class TestRawCodeDirt:
+    """Raw claims carry trailing spaces on stockist codes and lower-case batch codes. If cleaning misses them, over-supply and repeat
+    counts are wrong (found in the 22 Nov independent recheck: 141 false over-supply claims)."""
+
+    def test_no_claim_code_is_untrimmed_or_lowercase(self):
+        assert all(c["stk"] == c["stk"].strip().upper() for c in C.claims)
+        assert all(c["batch"] == c["batch"].strip().upper() for c in C.claims)
+
+    def test_known_padded_stockist_claim_is_matched_to_its_supply(self):
+        # raw row: 'STK0106 ' (trailing space), batch A2460246, 16 packs; 2,436 packs of the batch were invoiced to STK0106
+        c = next(c for c in C.claims if c["claim_no"] == "CLM-2407-04080")
+        assert c["stk"] == "STK0106" and c["batch"] == "A2460246"
+        assert C.supply[("STK0106", "A2460246")] == 2436.0
+
+    def test_lowercase_batch_claims_resolve_to_the_batch_master(self):
+        lower = [c for c in C.claims if c["claim_no"] in {"CLM-2407-04057", "CLM-2409-04252", "CLM-2410-04009"}]
+        assert len(lower) == 3 and all(c["batch"] in C.batches for c in lower)
+
+    def test_unverifiable_count_needs_batch_normalisation(self):
+        credited = [c for c in C.claims if c["status"] == "Credited"]
+        assert sum(1 for c in credited if c["batch"] not in C.batches) == 971
