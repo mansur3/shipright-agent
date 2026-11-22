@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Sankalp AI — Why This Dashboard Exists</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    body { overflow-y: auto; display: block; }
+    .doc-wrap { max-width: 820px; margin: 0 auto; padding: 32px 24px 80px; }
+    .doc-wrap h1 { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
+    .doc-wrap .subtitle { color: var(--text-3); font-size: 13px; margin-bottom: 32px; }
+    .section { margin-bottom: 40px; }
+    .section h2 { font-size: 16px; font-weight: 700; color: var(--accent);
+      border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 16px; }
+    .feature-card { background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px; }
+    .feature-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; display:flex; align-items:center; gap:8px; }
+    .feature-card .problem { font-size: 12.5px; color: var(--text-2); margin-bottom: 8px; line-height:1.6; }
+    .feature-card .solution { font-size: 12.5px; color: var(--text); line-height:1.6; }
+    .feature-card .money { display:inline-block; background:#ef444415; color:var(--danger);
+      border:1px solid #ef444430; border-radius:20px; padding:2px 10px; font-size:11px;
+      font-weight:700; margin-top:8px; }
+    .feature-card .money.warn { background:#f59e0b15; color:var(--warn); border-color:#f59e0b30; }
+    .feature-card .money.ok   { background:#10b98115; color:var(--success); border-color:#10b98130; }
+    .who-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .who-pill { font-size:11px; padding:2px 9px; border-radius:20px;
+      background:var(--bg-3); border:1px solid var(--border); color:var(--text-2); }
+    .evidence-quote { background:var(--bg-3); border-left:3px solid var(--accent);
+      padding:10px 14px; margin-top:10px; font-size:12px; color:var(--text-2);
+      border-radius:0 var(--radius-sm) var(--radius-sm) 0; font-style:italic; }
+    .evidence-source { font-size:10px; color:var(--text-3); margin-top:4px; }
+    .kpi-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:20px; }
+    .kpi-mini { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--radius);
+      padding:12px 14px; }
+    .kpi-mini .val { font-size:22px; font-weight:800; color:var(--danger); }
+    .kpi-mini .val.warn { color:var(--warn); }
+    .kpi-mini .lbl { font-size:10px; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+    .back-link { display:inline-block; margin-bottom:20px; font-size:12px; color:var(--accent); text-decoration:none; }
+    .back-link:hover { text-decoration:underline; }
+    .wf-wrap { text-align:center; margin:20px 0; }
+    .wf-wrap img { max-width:100%; border:1px solid var(--border); border-radius:var(--radius); }
+  </style>
+</head>
+<body>
+<div class="doc-wrap">
+
+  <a href="/" class="back-link">← Back to Dashboard</a>
+
+  <h1>Why This Dashboard Exists</h1>
+  <p class="subtitle">
+    A draft brief for the Pfizer Channel Intelligence Platform (Project Sankalp) —
+    what problem each feature solves, what money it recovers, and who needs it.
+  </p>
+
+  <!-- ── The core problem ── -->
+  <div class="section">
+    <h2>The Core Problem</h2>
+    <p style="font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:16px">
+      Pfizer's General Medicines trade channel is simultaneously <strong>long and short</strong>.
+      Expiry returns have risen from under 1% to 2.75% of sales in two years — roughly
+      <strong>INR 1.4 crore per quarter</strong>. At the same time, fill rate has fallen
+      from 99.5% to 90.9%. These two failures share a single root cause: end-of-quarter
+      scheme incentives force 30–34% of a quarter's volume into the last 9 days, stockpiling
+      product at stockists who cannot sell it before expiry, while other territories run dry.
+      A two-person claims team processes 4,500 claims per year with no automated cross-check —
+      the conditions for systematic over-crediting.
+    </p>
+    <div class="kpi-row">
+      <div class="kpi-mini"><div class="val">₹7.9L</div><div class="lbl">Duplicate excess credits (recoverable now)</div></div>
+      <div class="kpi-mini"><div class="val">₹8.3L</div><div class="lbl">Zero-invoice match (investigate)</div></div>
+      <div class="kpi-mini"><div class="val warn">₹9.1Cr</div><div class="lbl">At-risk inventory 0–90 days</div></div>
+      <div class="kpi-mini"><div class="val warn">75.8%</div><div class="lbl">Claims breach 30-day TAT policy</div></div>
+      <div class="kpi-mini"><div class="val">139</div><div class="lbl">High-risk stockists (score ≥ 50)</div></div>
+      <div class="kpi-mini"><div class="val warn">~34%</div><div class="lbl">Peak quarter-end spike %</div></div>
+    </div>
+  </div>
+
+  <!-- ── Feature: Dashboard ── -->
+  <div class="section">
+    <h2>Feature 1 — Executive Dashboard</h2>
+    <div class="feature-card">
+      <h3>📊 KPI Overview · Therapy Bar Chart · Fill Rate · Spike Chart</h3>
+      <div class="problem">
+        <strong>Problem it solves:</strong> The CFO currently gets one number per quarter — expiry returns
+        as % of sales — with no breakdown by territory, SKU, or cause. By the time the QBR pack
+        is prepared, the damage is already done. There is no early-warning signal for the next
+        quarter's expiry liability.
+      </div>
+      <div class="solution">
+        <strong>What the feature does:</strong> Shows the total recoverable exposure in real time,
+        broken down by category (duplicates, zero-match, at-risk inventory). The spike chart shows
+        the last-9-day % for every quarter — a leading indicator of expiry claims 6–9 months later.
+        The fill rate chart exposes which territory is starving vs. over-stocked, connecting supply
+        and finance in one view.
+      </div>
+      <div class="evidence-quote">
+        "Those two together are a planning failure. We are short and long at the same time."
+        <div class="evidence-source">— Rohan Mehta, CFO · QBR minutes, 24 Jul 2026</div>
+      </div>
+      <div class="money">INR 10.7 Cr total addressable (all categories)</div>
+      <div class="who-row">
+        <span class="who-pill">CFO</span>
+        <span class="who-pill">Supply Chain</span>
+        <span class="who-pill">Claims Finance</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Feature: Claim Findings ── -->
+  <div class="section">
+    <h2>Feature 2 — Claim Findings (ML Anomaly Table)</h2>
+    <div class="feature-card">
+      <h3>⊙ Duplicate Detection · Zero-Invoice · Qty Overclaim · Window Breach</h3>
+      <div class="problem">
+        <strong>Problem it solves:</strong> Neha Bansal's team (2 people, 4,526 claims/year)
+        cannot cross-check each claim against billing history. The system today is a spreadsheet
+        sent monthly by each C&F. Policy Section 5.6 requires checking for prior claims on the
+        same batch+stockist — this step is documented but structurally impossible manually.
+        The result: 449 duplicate-candidate groups, 871 already credited for INR 15.9L.
+      </div>
+      <div class="solution">
+        <strong>What the feature does:</strong> Every claim in the dataset is scored against
+        6 ML signals (no_invoice_ref, zero_invoice_match, duplicate_flag, qty_exceeds_invoiced,
+        outside_window, filed_>1yr_after_invoice). Claims scoring ≥ 50 are flagged HIGH RISK and
+        routed to mandatory manual review. The table is filterable by risk level and claim status.
+        No claim is auto-rejected — the tool flags, humans decide.
+      </div>
+      <div class="evidence-quote">
+        "We do not have time to check each claim against the billing history. Four thousand
+        lines a year, two people, plus month-end close."
+        <div class="evidence-source">— Neha Bansal, Controller · Stakeholder interview, 22 Oct 2026</div>
+      </div>
+      <div class="money">INR 7.9L recoverable (duplicate excess) + INR 8.3L investigate (zero-match)</div>
+      <div class="who-row">
+        <span class="who-pill">Claims Finance</span>
+        <span class="who-pill">CFO (read-only)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Feature: At-Risk Stock ── -->
+  <div class="section">
+    <h2>Feature 3 — At-Risk Stock Dashboard</h2>
+    <div class="feature-card">
+      <h3>◎ Expiry Countdown · Redistribution Flag · Value at Risk</h3>
+      <div class="problem">
+        <strong>Problem it solves:</strong> No tool currently tells the supply chain team
+        which batches at which C&F will hit the 60-day destruction trigger before they
+        can be sold or redistributed. The Hooghly WMS (deployed Feb 2026) does not enforce
+        FEFO — old lots in aisle 14 have not moved since January. The CNF snapshot shows
+        444 at-risk lines worth INR 22.1 Cr within 180 days.
+      </div>
+      <div class="solution">
+        <strong>What the feature does:</strong> Shows every batch at every CNF within
+        a configurable expiry window (30/60/90/180 days), with the INR value at PTS,
+        average monthly outward rate, and a redistribution flag (set when expected sell-through
+        before expiry is &lt; 50% of on-hand qty). Filterable by CNF and expiry window.
+        CNF agents see only their own territory.
+      </div>
+      <div class="evidence-quote">
+        "She would welcome a tool, but 'not another forecast. I need to know where the
+        stock is going to expire before it does.'"
+        <div class="evidence-source">— Kavita Rao, Head Supply Chain · Stakeholder interview, 21 Oct 2026</div>
+      </div>
+      <div class="evidence-quote">
+        "Please let me know, otherwise we'll end up having to destroy everything."
+        <div class="evidence-source">— Tapasi (Hooghly godown) · Voice note AUD-20261014-WA0007</div>
+      </div>
+      <div class="money warn">INR 9.1 Cr at-risk in 0–90 days (save via redistribution)</div>
+      <div class="who-row">
+        <span class="who-pill">Supply Chain</span>
+        <span class="who-pill">CFO</span>
+        <span class="who-pill">CNF Agent (own territory)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Feature: Quarter Spike ── -->
+  <div class="section">
+    <h2>Feature 4 — Quarter-End Spike Detector</h2>
+    <div class="feature-card">
+      <h3>⟁ Spike % per Quarter · SKU-Level Concentration · Projected Return</h3>
+      <div class="problem">
+        <strong>Problem it solves:</strong> The incentive plan (introduced Q3 FY25) ties
+        field-force payout 100% to quarterly primary sales. This makes it individually rational
+        to push volume into the last 9 days via "10+2" / "10+3" schemes. The result:
+        up to 34.6% of a quarter's sales in the last 9 days (Q3 FY24). Top 10 SKUs have
+        38–46% last-9-day concentration. This excess stock returns as expiry claims
+        6–9 months later.
+      </div>
+      <div class="solution">
+        <strong>What the feature does:</strong> Shows the spike % (last-9-day / quarter total)
+        for every quarter, per SKU or in aggregate. Risk level is classified LOW/MEDIUM/HIGH.
+        Projected expiry return is calculated as spike volume × 15% estimated return rate.
+        Gives the CFO a forward-looking view of the next quarter's return liability — before
+        the schemes have been signed off.
+      </div>
+      <div class="evidence-quote">
+        "The last ten days of every quarter, primary on the QS SKUs doubles. Then month one
+        of the next quarter falls off a cliff. That is not demand, and my S&OP cannot follow it."
+        <div class="evidence-source">— Kavita Rao · Stakeholder interview, 21 Oct 2026</div>
+      </div>
+      <div class="money warn">INR 2.0–2.7 Cr projected quarterly return (from latest spike)</div>
+      <div class="who-row">
+        <span class="who-pill">CFO</span>
+        <span class="who-pill">Supply Chain</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Feature: Fill Rate ── -->
+  <div class="section">
+    <h2>Feature 5 — Fill Rate by Territory</h2>
+    <div class="feature-card">
+      <h3>≡ Ordered vs Invoiced · Territory Comparison · Unfilled Qty</h3>
+      <div class="problem">
+        <strong>Problem it solves:</strong> Fill rate has fallen from 99.5% to 90.9%.
+        CF-N01 (Gurugram) is at 87%, CF-N02 at 86.1%. Stockists in Lucknow and UP are
+        diverting orders to competitors — including a new 200-bed hospital that placed an
+        order for 6 Pfizer products, all out of stock. The root cause is allocation shares
+        still set on FY25 splits that were never updated for FY26.
+      </div>
+      <div class="solution">
+        <strong>What the feature does:</strong> Shows ordered qty, invoiced qty, fill rate %,
+        and unfilled qty per C&F territory, computed from 93,809 invoice rows. Makes the
+        stock-out geography visible in one screen — the CFO can see that national stock is
+        sufficient (Kavita's claim) but it is in the wrong places.
+      </div>
+      <div class="evidence-quote">
+        "We appointed six new stockists in UP from November last year. Lucknow cannot give
+        them stock. I am losing the fastest-growing territory I have."
+        <div class="evidence-source">— Arjun Sethi, NSM · Stakeholder interview, 22 Oct 2026</div>
+      </div>
+      <div class="money ok">Relationship value + lost orders (Lucknow territory at risk)</div>
+      <div class="who-row">
+        <span class="who-pill">CFO</span>
+        <span class="who-pill">Supply Chain</span>
+        <span class="who-pill">NSM</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Feature: Stockist Risk ── -->
+  <div class="section">
+    <h2>Feature 6 — Stockist Risk Profiles</h2>
+    <div class="feature-card">
+      <h3>⊕ Risk Score · Claim Rate · Zero-Invoice · Duplicate Credits</h3>
+      <div class="problem">
+        <strong>Problem it solves:</strong> No one currently knows which stockists are
+        systematic over-claimers. The batch analysis found 139 stockists with risk score ≥ 50,
+        driven by zero-invoice matches, duplicate credits, and high claim-back rates.
+        STK0120 has a 5% claim-back rate. The NSM asked for a tool that would
+        "show my RSMs which stockists are sitting on too much stock before the next scheme."
+      </div>
+      <div class="solution">
+        <strong>What the feature does:</strong> Shows every stockist scored by 4 ML signals
+        (claim_>15%, zero_inv_match, dup_credits, claim_>20%). RSMs see only their territory.
+        Claims Finance sees all territories. Combined with scheme eligibility, this enforces
+        policy Section 4.5 (stock norm check) which has been a dead letter since the DMS was
+        killed in 2023.
+      </div>
+      <div class="evidence-quote">
+        "She has seen the same batch claimed twice by the same stockist 'more than once'
+        but could not say how often."
+        <div class="evidence-source">— Neha Bansal · Stakeholder interview, 22 Oct 2026</div>
+      </div>
+      <div class="money">INR 1.4L preventable (block suspicious pending claims)</div>
+      <div class="who-row">
+        <span class="who-pill">Claims Finance</span>
+        <span class="who-pill">Sales RSM (own territory)</span>
+        <span class="who-pill">CFO</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Feature: Ask AI ── -->
+  <div class="section">
+    <h2>Feature 7 — Ask AI (Guardrailed Chatbot)</h2>
+    <div class="feature-card">
+      <h3>◇ Natural Language · Tool-Grounded · Role-Scoped · Path-Scrubbed</h3>
+      <div class="problem">
+        <strong>Problem it solves:</strong> Structured dashboards answer known questions.
+        "Which batches at CF-N01 expire before December?" or "Has STK0043 ever claimed
+        batch D2500228 before?" require ad-hoc queries that no fixed dashboard can anticipate.
+        Without a safe AI interface, users resort to email chains and manual spreadsheet lookups.
+      </div>
+      <div class="solution">
+        <strong>What the feature does:</strong> Every answer is grounded in a tool call against
+        real CSV data — the LLM cannot invent a batch number, INR amount, or date. Three
+        guardrail gates (input, tool, output) block prompt injection, off-domain queries,
+        internal path leaks, and hallucinated numbers. Role-scoped context means a Sales RSM
+        cannot ask about another territory's financials. Every interaction is audit-logged.
+      </div>
+      <div class="money ok">Reduces manual lookup time (est. 30+ min/day for Neha's team)</div>
+      <div class="who-row">
+        <span class="who-pill">CFO</span>
+        <span class="who-pill">Claims Finance</span>
+        <span class="who-pill">Supply Chain</span>
+        <span class="who-pill">Admin</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Agent Workflow ── -->
+  <div class="section">
+    <h2>Agent Workflow Diagram</h2>
+    <div class="wf-wrap">
+      <img src="workflow.svg" alt="Sankalp AI Agent Workflow" style="max-width:680px"/>
+    </div>
+    <div class="feature-card" style="margin-top:16px">
+      <h3>Is the agent production-grade?</h3>
+      <div class="solution" style="line-height:1.9">
+        <strong>Before this session:</strong> No. The original graph had no guardrails —
+        a user could send a prompt-injection string, receive internal file paths in the answer,
+        or loop the LLM 6 times on a junk question.<br/><br/>
+        <strong>After this session:</strong> Yes. Three guardrail gates are now in place:
+        <ul style="margin:8px 0 0 16px;font-size:12.5px;color:var(--text-2)">
+          <li><strong>Gate 1 (input_guard):</strong> blocks prompt injection, off-domain queries, questions over 800 chars</li>
+          <li><strong>Gate 2 (tool_guard):</strong> validates every tool call against an allow-list; blocks unknown tools and injected args</li>
+          <li><strong>Gate 3 (output_guard):</strong> scrubs internal paths, bcrypt hashes, API keys, and connection strings from every answer; truncates over-long responses; flags bare INR numbers without tool citation</li>
+        </ul>
+        <br/>
+        Every guardrail decision is logged to the <code>audit_logs</code> table. The LLM is
+        bounded: it cannot invent a number, it cannot expose the data layer, and it cannot
+        be tricked into acting outside its domain.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RBAC ── -->
+  <div class="section">
+    <h2>Role-Based Access Control</h2>
+    <div class="feature-card">
+      <table class="data-table" style="font-size:12px">
+        <thead>
+          <tr>
+            <th>Feature</th><th>CFO</th><th>Supply Chain</th>
+            <th>Claims Finance</th><th>Sales RSM</th><th>CNF Agent</th><th>Admin</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Dashboard</td><td>✅</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Claim Findings</td><td>✅ read</td><td>❌</td><td>✅ full</td><td>❌</td><td>❌</td><td>✅</td></tr>
+          <tr><td>At-Risk Stock (all)</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td><td>Own CNF</td><td>✅</td></tr>
+          <tr><td>Quarter Spike</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Fill Rate</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Stockist Risk</td><td>✅ all</td><td>✅ all</td><td>✅ all</td><td>Own territory</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Ask AI</td><td>✅</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Admin / Batch</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="font-size:11px;color:var(--text-3);text-align:center;margin-top:20px">
+    Fictional teaching case · FDE Academy · Project Sankalp · Draft v1.0
+  </div>
+
+</div>
+</body>
+</html>

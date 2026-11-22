@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sankalp AI — Pfizer Channel Intelligence</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- ── Toast area ──────────────────────────────────────────────────────────── -->
+    <div id="toastArea" class="toast-area"></div>
+
+    <!-- ── Login modal ─────────────────────────────────────────────────────────── -->
+    <div id="loginModal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-logo">
+          <div class="logo-pill">S</div>
+          <span>Sankalp AI</span>
+        </div>
+        <div class="modal-sub">Pfizer Channel Intelligence Platform</div>
+        <form id="loginForm" class="form-grid" style="margin-top: 20px">
+          <label class="full"
+            >Username
+            <input
+              id="lu"
+              type="text"
+              placeholder="cfo / claims / supply / admin"
+              autocomplete="username"
+              required
+            />
+          </label>
+          <label class="full"
+            >Password
+            <input
+              id="lp"
+              type="password"
+              placeholder="••••••••••"
+              autocomplete="current-password"
+              required
+            />
+          </label>
+          <button type="submit" class="btn-primary full">Sign In</button>
+        </form>
+        <div class="modal-hint">
+          Default accounts: cfo · claims · supply · admin · rsm_north ·
+          cnf_east<br />
+          Passwords: Cfo@2026 · Claims@2026 · Supply@2026 · Admin@2026 ·
+          Rsm@2026 · Cnf@2026
+        </div>
+      </div>
+    </div>
+
+    <!-- ── App shell ────────────────────────────────────────────────────────────── -->
+    <div id="appShell" style="display: none; display: flex; flex: 1">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+          <div class="logo-pill">S</div>
+          <span class="logo-text">Sankalp AI</span>
+        </div>
+        <nav class="sidebar-nav" id="sideNav"><!-- built by JS --></nav>
+        <div class="sidebar-footer">
+          <div class="health-dot" id="healthDot"></div>
+          <span id="healthText">Checking…</span>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="menu-btn" id="menuBtn">☰</button>
+            <h1 class="page-title" id="pageTitle">Dashboard</h1>
+          </div>
+          <div class="topbar-right">
+            <div class="badge badge-role" id="userBadge">—</div>
+            <button
+              class="btn-secondary"
+              id="logoutBtn"
+              style="padding: 4px 10px; font-size: 12px"
+            >
+              Sign Out
+            </button>
+          </div>
+        </header>
+
+        <div class="views-wrap">
+          <!-- DASHBOARD -->
+          <section class="view active" id="view-dashboard">
+            <div class="kpi-grid" id="kpiGrid"></div>
+            <div class="two-col">
+              <div class="card">
+                <div class="card-header">At-Risk Inventory by SKU</div>
+                <div class="card-body">
+                  <div class="bar-chart" id="therapyChart"></div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">Fill Rate by Territory</div>
+                <div class="card-body">
+                  <div class="bar-chart" id="fillChart"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card mt-16">
+              <div class="card-header">Quarter-End Spike — All SKUs</div>
+              <div class="card-body">
+                <div class="spike-chart" id="spikeChart"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- CLAIM FINDINGS -->
+          <section class="view" id="view-claims">
+            <div class="card">
+              <div class="card-header flex-between">
+                <span>Claim Anomaly Findings</span>
+                <div class="filter-row">
+                  <select id="claimRiskFilter">
+                    <option value="">All Risk Levels</option>
+                    <option value="HIGH">HIGH</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="LOW">LOW</option>
+                  </select>
+                  <select id="claimStatusFilter">
+                    <option value="">All Statuses</option>
+                    <option value="Credited">Credited</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="summary-row" id="claimSummaryRow"></div>
+                <div class="table-wrap">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Claim No</th>
+                        <th>Stockist</th>
+                        <th>Batch</th>
+                        <th>SKU</th>
+                        <th>Value (INR)</th>
+                        <th>Status</th>
+                        <th>Risk</th>
+                        <th>Signals</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="claimBody">
+                      <tr>
+                        <td colspan="9" class="loading">Loading…</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- AT-RISK STOCK -->
+          <section class="view" id="view-stock">
+            <div class="card">
+              <div class="card-header flex-between">
+                <span>At-Risk Batches</span>
+                <div class="filter-row">
+                  <select id="cnfFilter">
+                    <option value="">All CNFs</option>
+                    <option>CF-N01</option>
+                    <option>CF-N02</option>
+                    <option>CF-S01</option>
+                    <option>CF-S02</option>
+                    <option>CF-E01</option>
+                    <option>CF-W01</option>
+                  </select>
+                  <select id="daysFilter">
+                    <option value="30">0–30 days</option>
+                    <option value="60">0–60 days</option>
+                    <option value="90" selected>0–90 days</option>
+                    <option value="180">0–180 days</option>
+                  </select>
+                  <button class="btn-secondary" id="loadStock">Load</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="summary-row" id="stockSummary"></div>
+                <div class="table-wrap">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>CNF</th>
+                        <th>City</th>
+                        <th>SKU</th>
+                        <th>Product</th>
+                        <th>Batch</th>
+                        <th>Expiry</th>
+                        <th>Days</th>
+                        <th>Qty</th>
+                        <th>Value (INR)</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="stockBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- QUARTER SPIKE -->
+          <section class="view" id="view-spike">
+            <div class="card">
+              <div class="card-header flex-between">
+                <span>Quarter-End Spike Detector</span>
+                <div class="filter-row">
+                  <select id="skuFilterSpike">
+                    <option value="">All SKUs</option>
+                    <option>PFL1001</option>
+                    <option>PFL1002</option>
+                    <option>PFL1003</option>
+                    <option>PFL1101</option>
+                    <option>PFL1102</option>
+                    <option>PFL1103</option>
+                    <option>PFL1301</option>
+                    <option>PFL1401</option>
+                    <option>PFL1507</option>
+                  </select>
+                  <button class="btn-secondary" id="loadSpike">Analyse</button>
+                </div>
+              </div>
+              <div class="card-body" id="spikeResultWrap">
+                <div class="loading">Select a SKU and click Analyse.</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- FILL RATE -->
+          <section class="view" id="view-fillrate">
+            <div class="card">
+              <div class="card-header">Fill Rate by CNF Territory</div>
+              <div class="card-body" id="fillRateBody">
+                <div class="loading">Loading…</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- STOCKIST RISK -->
+          <section class="view" id="view-stockist">
+            <div class="card">
+              <div class="card-header">Stockist Risk Profiles</div>
+              <div class="card-body" id="stockistRiskBody">
+                <div class="loading">Loading…</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ASK AI -->
+          <section class="view" id="view-ask">
+            <div class="card ask-card">
+              <div class="card-header">Ask Sankalp AI</div>
+              <div class="card-body">
+                <div class="chat-window" id="chatWindow"></div>
+                <form class="chat-input-row" id="chatForm">
+                  <input
+                    type="text"
+                    id="chatInput"
+                    placeholder="e.g. Which batches at CF-N01 expire in 60 days?"
+                  />
+                  <button type="submit" class="btn-primary">Ask</button>
+                </form>
+                <div class="suggested-qs">
+                  <span class="sq-label">Try:</span>
+                  <button
+                    class="sq"
+                    data-q="What is the total money we can recover?"
+                  >
+                    Recovery total
+                  </button>
+                  <button
+                    class="sq"
+                    data-q="Which stockists have duplicate credits?"
+                  >
+                    Duplicate credits
+                  </button>
+                  <button class="sq" data-q="What is the fill rate for CF-N02?">
+                    Fill rate CF-N02
+                  </button>
+                  <button
+                    class="sq"
+                    data-q="Which batches expire in the next 30 days at CF-E01?"
+                  >
+                    Expiry alert
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- RAPID REPORT -->
+          <section class="view" id="view-report">
+            <div class="card">
+              <div class="card-header flex-between">
+                <span>RAPID Discovery Report</span>
+                <a
+                  href="/RAPID_REPORT.md"
+                  download
+                  class="btn-secondary"
+                  style="text-decoration: none"
+                  >⬇ Download MD</a
+                >
+              </div>
+              <div class="card-body report-body" id="reportBody">
+                <div class="loading">Loading…</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- AGENT WORKFLOW -->
+          <section class="view" id="view-workflow">
+            <div class="card" style="overflow: visible">
+              <div class="card-header">Sankalp AI — Agent Workflow Diagram</div>
+              <div
+                class="card-body"
+                id="workflowBody"
+                style="overflow: visible"
+              >
+                <div class="loading">Loading…</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- WHY THIS EXISTS -->
+          <section class="view" id="view-why">
+            <div class="card" style="overflow: visible">
+              <div class="card-header flex-between">
+                <span>Why This Dashboard Exists</span>
+                <a
+                  href="/why.html"
+                  target="_blank"
+                  class="btn-secondary"
+                  style="text-decoration: none"
+                  >↗ Open full page</a
+                >
+              </div>
+              <div class="card-body" style="padding: 0; overflow: hidden">
+                <iframe
+                  src="/why.html"
+                  style="
+                    width: 100%;
+                    height: 72vh;
+                    border: none;
+                    border-radius: 0 0 var(--radius) var(--radius);
+                  "
+                  title="Why This Dashboard Exists"
+                ></iframe>
+              </div>
+            </div>
+          </section>
+
+          <!-- MY CLAIMS — AI agent + claim list -->
+          <section class="view" id="view-myclaims">
+            <div class="two-col">
+              <div class="card" style="overflow: visible">
+                <div class="card-header">Claims AI Assistant</div>
+                <div class="card-body">
+                  <div
+                    class="chat-window"
+                    id="claimsChatWindow"
+                    style="min-height: 280px; max-height: 380px"
+                  ></div>
+                  <form class="chat-input-row" id="claimsChatForm">
+                    <input
+                      type="text"
+                      id="claimsChatInput"
+                      placeholder="Type: 'I want to file a claim' or 'check my claim status'"
+                    />
+                    <button type="submit" class="btn-primary">Send</button>
+                  </form>
+                  <div class="suggested-qs" style="margin-top: 8px">
+                    <button
+                      class="sq"
+                      data-cq="I want to file a new expiry claim"
+                    >
+                      File claim
+                    </button>
+                    <button
+                      class="sq"
+                      data-cq="What is the status of my claims?"
+                    >
+                      Check status
+                    </button>
+                  </div>
+                  <div style="margin-top: 10px">
+                    <img
+                      src="claims_workflow.svg"
+                      alt="Claims Agent Workflow"
+                      style="
+                        max-width: 100%;
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius);
+                      "
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="card" style="overflow: visible">
+                <div class="card-header flex-between">
+                  <span>My Claims</span>
+                  <select id="myClaimsFilter" style="width: auto">
+                    <option value="">All Statuses</option>
+                    <option>Submitted</option>
+                    <option>Under Review</option>
+                    <option>Approved</option>
+                    <option>Rejected</option>
+                    <option>Credited</option>
+                  </select>
+                </div>
+                <div class="card-body" style="overflow: visible">
+                  <div class="summary-row" id="myClaimsSummary"></div>
+                  <div class="table-wrap">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>Claim No</th>
+                          <th>Status</th>
+                          <th>Batch</th>
+                          <th>Type</th>
+                          <th>Value (INR)</th>
+                          <th>Recovery</th>
+                          <th>Risk</th>
+                          <th>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody id="myClaimsBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- AUDITOR REVIEW — all claims with filtration -->
+          <section class="view" id="view-auditor">
+            <div class="card" style="overflow: visible">
+              <div class="card-header flex-between">
+                <span>Auditor Review — All User Claims</span>
+                <div class="filter-row">
+                  <select id="auditorStatusFilter" style="width: auto">
+                    <option value="">All Statuses</option>
+                    <option>Submitted</option>
+                    <option>Under Review</option>
+                    <option>Approved</option>
+                    <option>Rejected</option>
+                    <option>Credited</option>
+                  </select>
+                  <input
+                    type="text"
+                    id="auditorUserFilter"
+                    placeholder="Filter by user"
+                    style="width: 120px"
+                  />
+                  <select id="auditorRiskFilter" style="width: auto">
+                    <option value="0">Any Risk</option>
+                    <option value="25">≥ 25</option>
+                    <option value="50">≥ 50 (High)</option>
+                  </select>
+                  <button class="btn-secondary" id="loadAuditorClaims">
+                    Load
+                  </button>
+                </div>
+              </div>
+              <div class="card-body" style="overflow: visible">
+                <div class="table-wrap">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Claim No</th>
+                        <th>Submitted By</th>
+                        <th>Status</th>
+                        <th>Stockist</th>
+                        <th>Batch</th>
+                        <th>SKU</th>
+                        <th>Type</th>
+                        <th>Qty</th>
+                        <th>Value</th>
+                        <th>Recovery</th>
+                        <th>Risk</th>
+                        <th>Flags</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="auditorBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- CFO RECOVERY BENCHMARK -->
+          <section class="view" id="view-benchmark">
+            <div class="kpi-grid" id="benchmarkKpis"></div>
+            <div class="card mt-16" style="overflow: visible">
+              <div class="card-header">
+                Money Recovery Benchmark — Recovered vs Recoverable
+              </div>
+              <div class="card-body" style="overflow: visible">
+                <div class="table-wrap">
+                  <table class="data-table" id="benchmarkTable">
+                    <thead>
+                      <tr>
+                        <th>Category</th>
+                        <th>Amount (INR)</th>
+                        <th>Type</th>
+                        <th>Source</th>
+                      </tr>
+                    </thead>
+                    <tbody id="benchmarkBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ADMIN -->
+          <section class="view" id="view-admin">
+            <div class="two-col">
+              <div class="card">
+                <div class="card-header flex-between">
+                  <span>Batch Processing</span>
+                  <button class="btn-primary" id="runBatchBtn">
+                    Run Batch Now
+                  </button>
+                </div>
+                <div class="card-body" id="batchHistory">
+                  <div class="loading">Loading history…</div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header">User Management</div>
+                <div class="card-body">
+                  <div class="table-wrap">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Username</th>
+                          <th>Email</th>
+                          <th>Role</th>
+                          <th>CNF</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody id="userTable"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <!-- /views-wrap -->
+      </main>
+    </div>
+    <!-- /appShell -->
+
+    <script src="app.js"></script>
+  </body>
+</html>
