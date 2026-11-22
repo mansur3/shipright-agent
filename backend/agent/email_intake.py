@@ -13,7 +13,7 @@ from datetime import date, timedelta
 from typing import Optional
 
 import config as P
-from agent.claim_checks import ClaimInput, PERSON, evaluate
+from agent.claim_checks import ClaimInput, PERSON, REJECT, evaluate
 from agent.clean import code, get_clean, parse_date
 
 _BATCH = re.compile(r"\b([A-Z][0-9O]{7})\b")
@@ -110,7 +110,7 @@ def triage_email(email_id: str, received: str, sender_stockist: str, subject: st
         return out
 
     out["intent"] = "claim"
-    seen: set = set()
+    seen: dict = {}   # (batch, qty) -> invoice reference of the first line that carried it
     for ln in batch_lines:
         raw_batch = _BATCH.search(ln).group(1)
         batch = raw_batch
@@ -128,10 +128,17 @@ def triage_email(email_id: str, received: str, sender_stockist: str, subject: st
         inv = _norm_invoice(inv_m.group(0)) if inv_m else ""
         key = (batch, qty)
         if key in seen:
-            out["lines"].append({"line": ln.strip()[:200], "batch": batch, "qty": qty, "decision": PERSON, "tier": "INVALID", "rule_ids": ["R_LINE_REPEATED"],
-                                 "reason": "the same batch and quantity appear twice in one message", "flags": ["line_repeated_in_message"]})
+            if inv and inv == seen[key]:
+                # same batch, quantity AND invoice listed again in one message: the same claim twice (policy 5.6 step 3, check for an earlier claim)
+                out["lines"].append({"line": ln.strip()[:200], "batch": batch, "qty": qty, "decision": REJECT, "tier": "T2", "rule_ids": ["R_LINE_REPEATED"],
+                                     "reason": f"the same batch, quantity and invoice ({inv}) are already listed earlier in this message; the claim is paid once",
+                                     "clause": "CO-POL-014 5.6 step 3 (p4)", "flags": ["line_repeated_in_message", "exact_repeat"]})
+            else:
+                out["lines"].append({"line": ln.strip()[:200], "batch": batch, "qty": qty, "decision": PERSON, "tier": "INVALID", "rule_ids": ["R_LINE_REPEATED"],
+                                     "reason": "the same batch and quantity appear twice in one message with no matching invoice reference to show they are the same claim",
+                                     "flags": ["line_repeated_in_message"]})
             continue
-        seen.add(key)
+        seen[key] = inv
         if not stk:
             out["lines"].append({"line": ln.strip()[:200], "batch": batch, "qty": qty, "decision": PERSON, "tier": "INVALID", "rule_ids": ["R_SENDER"],
                                  "reason": "the sender is not matched to a stockist (personal address or unknown sender); the claimant must be confirmed first", "flags": ["sender_not_matched"]})

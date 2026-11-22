@@ -271,6 +271,41 @@ def at_risk_stock(days: int = 180, cnf: str = "") -> dict:
             "source": "cnf_stock_snapshot.csv latest month-end only"}
 
 
+# ── R7: freeze watch and regional imbalance ───────────────────────────────────
+
+def freeze_watch(cnf: str = "") -> dict:
+    """Batches on hand at the latest month-end that are within 120 and within 90 days of the 60-day dispatch freeze, i.e. 180 and 150 days or
+    fewer to expiry, plus which C&Fs hold more or less stock than their share of demand. Rules and thresholds are in config.py; no model."""
+    narrow = P.FREEZE_DAYS + min(P.FREEZE_WATCH_DAYS)   # 150
+    wide = P.FREEZE_DAYS + max(P.FREEZE_WATCH_DAYS)     # 180
+    r_wide = at_risk_stock(wide, cnf)
+    rows = [x for x in r_wide["batches"] if x["days_to_expiry"] >= P.FREEZE_DAYS]   # already inside the freeze is a destruction case, not a watch
+    r_narrow = at_risk_stock(narrow, cnf)
+
+    def band(b: dict, limit: int) -> dict:
+        sel = [x for x in b["batches"] if x["days_to_expiry"] >= P.FREEZE_DAYS]
+        return {"days_to_expiry_at_most": limit, "batches": len(sel), "value_inr": round(sum(x["value_inr"] for x in sel), 2),
+                "top_batches": sorted(sel, key=lambda x: -x["value_inr"])[:5]}
+
+    sc = stock_cover()
+    imb = []
+    for x in sc["by_cnf"]:
+        ratio = x["share_of_stock_pct"] / x["share_of_outward_pct"] if x["share_of_outward_pct"] else None
+        flag = "BALANCED"
+        if ratio is not None and ratio >= P.IMBALANCE_HEAVY:
+            flag = "HOLDS MORE THAN ITS SHARE"
+        elif ratio is not None and ratio <= P.IMBALANCE_SHORT:
+            flag = "SHORT FOR ITS DEMAND"
+        imb.append({"cnf_code": x["cnf_code"], "share_of_stock_pct": x["share_of_stock_pct"], "share_of_outward_pct": x["share_of_outward_pct"],
+                    "stock_to_demand_ratio": round(ratio, 2) if ratio is not None else None, "cover_months": x["cover_months"], "flag": flag})
+    return {"as_of": r_wide["as_of"], "freeze_days": P.FREEZE_DAYS, "clause": "CO-POL-014 7.1, 7.2 (p5)",
+            "within_90_days_of_freeze": band(r_narrow, narrow), "within_120_days_of_freeze": band(r_wide, wide),
+            "imbalance": imb,
+            "imbalance_rule": f"heavy at {P.IMBALANCE_HEAVY}x or more of its share of outward, short at {P.IMBALANCE_SHORT}x or less",
+            "godown_capacity": "Godown capacity is not in the extracts, so a capacity percentage (for example a godown at 96% full) cannot be measured; the imbalance above uses stock share against outward share.",
+            "source": "cnf_stock_snapshot.csv latest month-end only"}
+
+
 # ── dispatch quality: FEFO and residual shelf life (H27, H29) ─────────────────
 
 @lru_cache(maxsize=1)
@@ -340,9 +375,14 @@ def _monthly_purchases() -> dict:
     return {"paid": paid, "free": free}
 
 
-def scheme_gate(stockist: str, sku: str) -> dict:
+def scheme_gate(stockist: str, sku: str, proposed_order_qty: float | None = None, scheme_foc_qty: float = 0.0) -> dict:
     """What the extracts can and cannot say before a quarter-end scheme order is accepted from a stockist.
-    There is no secondary data, so closing stock (4.5) cannot be known: the gate flags, the RSM confirms."""
+    There is no secondary data, so closing stock (4.5) cannot be known: the gate flags, the RSM confirms.
+
+    With a proposed order (R6): baseline = mean monthly paid purchases over the six months before the last quarter, third month of each fiscal
+    quarter removed (the quarter-end surge). Stock already in the trade = purchases of the last three months, paid and free, above three
+    months of that baseline. Projected = (that + proposed paid packs + scheme free packs) / baseline, in months. Above the 2.5-month norm the
+    recommendation is BLOCK SCHEME; it rests on this proxy, so the RSM confirms it. A stockist with no baseline goes to a person."""
     C = get_clean()
     stk, sk = stockist.strip().upper(), sku.strip().upper().replace("-", "")
     if stk not in C.stockists:
@@ -370,6 +410,10 @@ def scheme_gate(stockist: str, sku: str) -> dict:
         if c["stk"] == stk and c["sku"] == sk and c["batch_in_master"] and c["status"] in ("Credited", "Pending") and C.batches[c["batch"]]["exp"] + timedelta(days=90) <= end:
             claimed += c["qty"]
     hist = round(100 * claimed / sup, 1) if sup else None
+    # R6 baseline: six months before the last quarter, month 3 of each fiscal quarter (Mar, Jun, Sep, Dec) stripped
+    kept = [x for x in (e - 3 - i for i in range(6)) if (x % 12) + 1 not in (3, 6, 9, 12)]
+    base6 = sum(m["paid"].get((stk, sk, x), 0.0) for x in kept) / len(kept)
+    in_trade = max(0.0, (paid_recent + free_recent) - 3 * base6) if base6 else None
     reasons = []
     if base == 0:
         reasons.append("no purchases of this SKU in the 9 months before the last quarter: normal monthly purchase unknown")
@@ -377,8 +421,23 @@ def scheme_gate(stockist: str, sku: str) -> dict:
         reasons.append(f"the last 3 months of invoices are {added:.1f} months of normal purchase above this stockist's usual flow (stock norm {P.SCHEME_STOCK_NORM_MONTHS} months)")
     if hist is not None and hist > 2 * rates["scheme_pack_rate_pct"]:
         reasons.append(f"{hist}% of this stockist's earlier scheme packs of this SKU came back as claims, against {rates['scheme_pack_rate_pct']}% for all stockists")
+    decision, eligible, projected, basis, owner = ("NEEDS RSM CONFIRMATION" if reasons else "NO FLAG FROM THE EXTRACTS"), None, None, "", ""
+    if proposed_order_qty is not None:
+        owner = "RSM confirms closing stock with the stockist (policy 4.5); the National Sales Manager (Arjun Sethi) approves schemes (policy 4.3)"
+        if not base6:
+            decision, reasons = "NEEDS A PERSON", reasons + ["no normal monthly purchase to measure the order against (no purchases of this SKU in the baseline months)"]
+        else:
+            projected = round((in_trade + float(proposed_order_qty) + float(scheme_foc_qty or 0)) / base6, 2)
+            basis = "proxy: months of normal purchase held above normal flow plus this order; closing stock cannot be measured (no secondary data)"
+            if projected > P.SCHEME_STOCK_NORM_MONTHS:
+                decision, eligible = "BLOCK SCHEME", False
+                reasons = [f"this order would take the stock added above normal flow to {projected:.1f} months of normal purchase, over the {P.SCHEME_STOCK_NORM_MONTHS}-month norm"] + reasons
     return {"found": True, "stockist_code": stk, "stockist_name": C.stockists[stk]["name"], "sku_code": sk, "product": C.skus[sk]["description"],
-            "decision": "NEEDS RSM CONFIRMATION" if reasons else "NO FLAG FROM THE EXTRACTS", "eligible": None, "reasons": reasons,
+            "decision": decision, "eligible": eligible, "reasons": reasons,
+            "baseline_packs_per_month_ex_month3": round(base6) if base6 else None,
+            "packs_in_trade_above_normal_flow": round(in_trade) if in_trade is not None else None,
+            "proposed_order_qty": proposed_order_qty, "scheme_foc_qty": scheme_foc_qty if proposed_order_qty is not None else None,
+            "projected_months_of_stock_added": projected, "basis": basis, "owner": owner,
             "normal_monthly_purchase_packs": round(base), "last_3_months_packs_paid_and_free": round(paid_recent + free_recent),
             "months_above_normal_flow": round(added, 1) if added is not None else None,
             "own_scheme_pack_claim_rate_pct": hist, "network_scheme_pack_claim_rate_pct": rates["scheme_pack_rate_pct"],

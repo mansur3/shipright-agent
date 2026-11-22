@@ -97,16 +97,34 @@ class TestToolGuard:
 # ── Trip budget guardrail ──────────────────────────────────────────────────────
 
 class TestTripBudget:
+    """The model/tool loop is capped at 4 round trips (project brief: MAX_TRIPS = 4)."""
+
+    def test_cap_is_four_and_shared_by_the_graph(self):
+        from agent import graph
+        from agent.guardrails import MAX_TOOL_TRIPS
+        assert MAX_TOOL_TRIPS == 4 and graph.MAX_TRIPS == 4
+
     def test_under_limit_allowed(self):
         r = check_trip_budget(0)
         assert r.allowed
-        r = check_trip_budget(5)
+        r = check_trip_budget(3)
         assert r.allowed
 
     def test_at_limit_blocked(self):
-        r = check_trip_budget(6)
+        r = check_trip_budget(4)
         assert not r.allowed
         assert "trip_limit" in r.flags
+
+    def test_a_model_that_never_stops_calling_tools_ends_with_a_plain_answer(self):
+        from langchain_core.messages import AIMessage, HumanMessage
+        from agent import graph
+        calls = [{"name": "get_fill_rate", "args": {}, "id": "c1"}]
+        state = {"messages": [HumanMessage(content="fill rate?"), AIMessage(content="", tool_calls=calls)], "trips": 4, "blocked": False, "error": None, "flags": []}
+        assert graph._route_after_model(state) == "output_guard"           # no fifth tool trip
+        out = graph.output_guard(state)
+        text = out["messages"][0].content
+        assert text.strip() and "limit" in text.lower()                      # never an empty reply
+        assert "trip_limit" in out["flags"]
 
     def test_over_limit_blocked(self):
         r = check_trip_budget(20)

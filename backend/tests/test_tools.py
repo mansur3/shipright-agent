@@ -130,3 +130,52 @@ def test_validate_claim_ignores_a_sku_that_is_not_one():
     wrong = T.validate_claim.invoke({**base, "sku_code": "50 STRIPS"})
     none = T.validate_claim.invoke(base)
     assert wrong["rule_id"] == none["rule_id"] and "mismatch" not in wrong["reason"].lower()
+
+
+class TestSchemeProposalR6:
+    """R6 (policy 4.5, stock norm 2.5 months): a proposed scheme order is checked against the stockist's own normal flow.
+    Baseline = mean monthly paid purchases over the six months before the last quarter, with the third month of each fiscal quarter
+    stripped (the quarter-end surge). Closing stock itself is unknowable (no secondary data), so a BLOCK is a proxy-based
+    recommendation that the RSM confirms; it is computed in code, never by the model."""
+
+    def _pair_with_a_baseline(self):
+        for n in range(1, 157):
+            r = T.check_scheme_eligibility.invoke({"stockist_code": f"STK{n:04d}", "sku_code": "PFL1002", "proposed_order_qty": 1})
+            if r.get("found") and r.get("baseline_packs_per_month_ex_month3"):
+                return r
+        raise AssertionError("no stockist with a baseline for PFL1002")
+
+    def test_a_proposal_far_above_normal_flow_is_blocked(self):
+        base = self._pair_with_a_baseline()
+        big = base["baseline_packs_per_month_ex_month3"] * 4          # four months of normal purchase on top of what is already in the trade
+        r = T.check_scheme_eligibility.invoke({"stockist_code": base["stockist_code"], "sku_code": "PFL1002", "proposed_order_qty": big})
+        assert r["decision"] == "BLOCK SCHEME" and r["eligible"] is False
+        assert r["projected_months_of_stock_added"] > 2.5 and r["clause"].startswith("CO-POL-014 4.5")
+        assert r["basis"].startswith("proxy") and "RSM" in r["owner"]
+
+    def test_the_block_is_arithmetic_not_opinion(self):
+        base = self._pair_with_a_baseline()
+        q = base["baseline_packs_per_month_ex_month3"] * 4
+        r = T.check_scheme_eligibility.invoke({"stockist_code": base["stockist_code"], "sku_code": "PFL1002", "proposed_order_qty": q, "scheme_foc_qty": 10})
+        expect = (r["packs_in_trade_above_normal_flow"] + q + 10) / r["baseline_packs_per_month_ex_month3"]
+        assert r["projected_months_of_stock_added"] == pytest.approx(expect, abs=0.06)
+
+    def test_a_small_proposal_is_not_blocked(self):
+        for n in range(1, 157):
+            r = T.check_scheme_eligibility.invoke({"stockist_code": f"STK{n:04d}", "sku_code": "PFL1002", "proposed_order_qty": 1})
+            if r.get("found") and r.get("baseline_packs_per_month_ex_month3") and r["projected_months_of_stock_added"] < 2.5:
+                assert r["decision"] != "BLOCK SCHEME"
+                return
+        raise AssertionError("expected at least one stockist with room under the 2.5-month norm")
+
+    def test_no_baseline_means_a_person_not_a_guess(self):
+        for n in range(1, 157):
+            r = T.check_scheme_eligibility.invoke({"stockist_code": f"STK{n:04d}", "sku_code": "PFL1002", "proposed_order_qty": 100})
+            if r.get("found") and not r.get("baseline_packs_per_month_ex_month3"):
+                assert r["decision"] == "NEEDS A PERSON" and r["projected_months_of_stock_added"] is None
+                return
+        pytest.skip("every stockist has a baseline for PFL1002")
+
+    def test_without_a_proposal_the_old_behaviour_is_unchanged(self):
+        r = T.check_scheme_eligibility.invoke({"stockist_code": "STK0058", "sku_code": "PFL1002"})
+        assert r["decision"] in ("NEEDS RSM CONFIRMATION", "NO FLAG FROM THE EXTRACTS") and r["eligible"] is None

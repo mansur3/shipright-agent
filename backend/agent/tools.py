@@ -86,17 +86,19 @@ def get_at_risk_stock(cnf_code: str = "", days_threshold: int = 90) -> dict:
     r = analysis.at_risk_stock(int(days_threshold), cnf_code.strip().upper())
     if not r["batches"]:
         r["message"] = f"No stock on hand at {r['as_of']} expires within {days_threshold} days."
+    r["freeze_watch"] = analysis.freeze_watch(cnf_code.strip().upper())   # R7: 120 and 90 days before the 60-day freeze, and regional imbalance
     return r
 
 
 # ── Tool 4: scheme gate ───────────────────────────────────────────────────────
 
 @tool
-def check_scheme_eligibility(stockist_code: str, sku_code: str) -> dict:
+def check_scheme_eligibility(stockist_code: str, sku_code: str, proposed_order_qty: float | None = None, scheme_foc_qty: float = 0.0) -> dict:
     """Before a quarter-end scheme order is accepted: how many months of normal purchase the stockist took in the last 3 months, and how much of its earlier
     scheme packs of that SKU came back as claims. Cannot measure closing stock (no secondary data), so it flags for the RSM to confirm; never says 'eligible'.
-    Use before accepting scheme orders from RSMs."""
-    return analysis.scheme_gate(stockist_code, sku_code)
+    Pass proposed_order_qty (and scheme_foc_qty) to test a specific order: code returns BLOCK SCHEME when the order would add more than 2.5 months of
+    normal purchase (policy 4.5), as a recommendation the RSM confirms. Use before accepting scheme orders from RSMs."""
+    return analysis.scheme_gate(stockist_code, sku_code, proposed_order_qty, scheme_foc_qty)
 
 
 # ── Tool 5: quarter phasing and scheme-driven returns ─────────────────────────

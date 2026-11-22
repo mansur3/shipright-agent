@@ -25,6 +25,10 @@ SCHEME_TIER_B_SKUS = frozenset({"PFL1004", "PFL1104", "PFL1201", "PFL1302", "PFL
 MIN_RSL_PCT: float = 0.60                 # residual shelf life at invoice >= 60% of the SKU's shelf life (policy)
 MIN_DAYS_AT_DISPATCH: int = 60            # C&F must not dispatch with under 60 days left (SOP); a separate, weaker rule
 BLOCK_MONTHS: float = 2.0                 # stock under 60 days to expiry is blocked and destroyed (7.2)
+FREEZE_DAYS: int = 60                    # stock under 60 days to expiry may not be dispatched (7.1, 7.2)
+FREEZE_WATCH_DAYS: tuple = (90, 120)     # R7: batches this many days before the freeze get a watch flag
+IMBALANCE_HEAVY: float = 1.5             # R7: a C&F holding 1.5x its share of outward as stock is heavy
+IMBALANCE_SHORT: float = 0.5             # R7: ... and under 0.5x is short
 
 # ── Judgement thresholds (not policy). Evidence in verification/05_findings_ledger.md ────────
 COVER_FLOOR_MONTHS: float = 1.0           # a C&F should hold at least one month of its own outward (policy tops up to two)

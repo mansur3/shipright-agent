@@ -53,9 +53,37 @@ class TestReading:
         l = r["lines"][0]
         assert l["decision"] == "NEEDS A PERSON" and l["rule_ids"] == ["R_BATCH_TYPO"] and l["suggested_batch"] == "K2300830"
 
-    def test_same_line_twice_is_flagged(self):
+    def test_same_line_twice_with_the_same_invoice_is_a_duplicate_to_reject(self):
+        # EML-013: batch L2430266, 61 strips, invoice INV/S02/2504/036190, listed twice. The second line is the same claim again.
         r = t("EML-013")
+        assert r["lines"][0]["decision"] == "APPROVE"
+        assert [l["decision"] for l in r["lines"]][1:] == ["REJECT"] and r["lines"][1]["rule_ids"] == ["R_LINE_REPEATED"]
+        assert r["lines"][1]["tier"] == "T2" and "5.6" in r["lines"][1]["clause"]
+
+    def test_same_batch_and_quantity_on_a_different_invoice_still_goes_to_a_person(self):
+        body = "Dear team, Monte-LC, batch K2430146, 5 strips, inv INV/N01/2501/000111" + chr(10) + "Monte-LC, batch K2430146, 5 strips, inv INV/N01/2502/000222"
+        r = triage_email("X", "10-10-2026", "STK0110", "claims", body)
         assert [l["decision"] for l in r["lines"]][1:] == ["NEEDS A PERSON"] and r["lines"][1]["rule_ids"] == ["R_LINE_REPEATED"]
+
+    def test_eml009_stale_line_is_rejected_for_filing_over_90_days_after_expiry(self):
+        r = t("EML-009")
+        late = next(l for l in r["lines"] if l["batch"] == "D2440121")
+        assert late["decision"] == "REJECT" and late["rule_ids"] == ["R_LATE_AFTER_EXPIRY"]
+        assert r["decision"] == "REJECT"
+
+    def test_eml015_fresh_stock_expiring_in_2028_is_rejected_and_the_window_breach_is_recorded(self):
+        r = t("EML-015")
+        l = r["lines"][0]
+        assert l["decision"] == "REJECT" and r["decision"] == "REJECT"
+        assert "outside_window" in l["flags"]                      # R2: stock with years of shelf life left is not a returnable claim
+
+    def test_a_claim_without_an_invoice_reference_goes_to_a_person_not_to_approve(self):
+        from agent.claim_checks import ClaimInput, evaluate
+        from agent.clean import get_clean, parse_date
+        C = get_clean()
+        c = next(c for c in C.claims if c["status"] == "Credited" and not c["inv"] and c["batch_in_master"])
+        v = evaluate(ClaimInput(stockist=c["stk"], batch=c["batch"], qty=1, claim_date=parse_date("30-09-2026"), claim_type="Short supply", invoice_ref=""), C)
+        assert v.decision != "APPROVE" and ("no_invoice_ref" in v.flags)
 
     def test_boxes_are_not_converted_silently(self):
         r = t("EML-008")

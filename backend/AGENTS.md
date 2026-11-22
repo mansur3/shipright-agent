@@ -45,12 +45,28 @@ A named person decides anything that moves money. Evidence tiers: T1 policy text
 - Secrets live only in `.env` locally and in the host's environment variables. `.env`, `*.db` and `.venv` are in `.gitignore`.
 - Users are created only from environment variables (see `.env.example`); no password in source.
 
+## Rules R1 to R7: where each lives
+
+| Rule | Policy | Code | Decision |
+|---|---|---|---|
+| R1 stale claim, more than 90 days after expiry | CO-POL-014 5.2 | `claim_checks.evaluate` (R_LATE_AFTER_EXPIRY) | REJECT |
+| R2 outside the claim window (near expiry: 90 days before to expiry; expired: expiry to 90 days after; breakage and short supply: 7 days from the invoice) | 5.2 | `claim_checks.window_result` (R_WINDOW) | REJECT |
+| R3 repeat of a credited claim | 5.6 step 3 | exact repeat: REJECT (R_EXACT_REPEAT, and R_LINE_REPEATED for the same line twice with the same invoice in one email); same batch, different quantity, still within supply: NEEDS A PERSON; a pending twin: NEEDS A PERSON | see left |
+| R4 quantity above packs invoiced to the stockist, free packs included | 5.5 | `claim_checks.evaluate` (R_OVER_SUPPLY) | REJECT |
+| R5 no invoice reference | 5.4 | R_NO_INVOICE_REF | NEEDS A PERSON |
+| R6 scheme order against the 2.5-month stock norm | 4.5 | `analysis.scheme_gate` with `proposed_order_qty`; `POST /api/evaluate-scheme` | BLOCK SCHEME (a recommendation on a proxy, the RSM confirms) |
+| R7 batches within 120 and 90 days of the 60-day freeze, regional imbalance | 7.1, 7.2 | `analysis.freeze_watch` (also returned by `get_at_risk_stock`) | flags only |
+
+Not implemented as a hard rule, and why: R6 closing stock cannot be measured (no secondary data), so BLOCK SCHEME rests on months of normal purchase held above the stockist's flow and is confirmed by the RSM; R7 godown capacity (a godown "at 96%") is not in the data, so no capacity figure is ever stated.
+
+The model loop is capped at 4 tool trips (`guardrails.MAX_TOOL_TRIPS`, shared by `graph.MAX_TRIPS`); at the cap the user gets a plain answer naming the tools already run. State is in `agent/state.py`. `POST /api/audit-claim` and `POST /api/evaluate-scheme` run no model and return `latency_ms`, `tools_called` and `model_calls`.
+
 ## How to run
 
 ```
 pip install -r requirements.txt
 set SANKALP_ADMIN_PASSWORD=<12+ characters>        (PowerShell: $env:SANKALP_ADMIN_PASSWORD="...")
-pytest -q                          # 256 tests, no key needed
+pytest -q                          # 280 tests, no key needed
 python checks/run_checks.py        # 20/20 check-set records
 uvicorn app:app --reload           # http://127.0.0.1:8000, API docs at /api/docs
 ```

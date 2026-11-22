@@ -114,3 +114,28 @@ class TestDispatchQuality:
         r = A.short_dated_dispatch()
         assert r["rows"] == 90435 or r["rows"] > 90000
         assert r["rows_under_60pct"] == pytest.approx(4866, abs=60) and r["share_pct"] == pytest.approx(5.4, abs=0.2)
+
+
+class TestFreezeWatchR7:
+    """R7: batches within 120 and 90 days of the mandatory 60-day dispatch freeze (180 and 150 days to expiry), and regional imbalance."""
+
+    def test_bands_are_the_policy_days_not_the_callers_choice(self):
+        r = A.freeze_watch()
+        assert r["freeze_days"] == 60 and r["within_90_days_of_freeze"]["days_to_expiry_at_most"] == 150
+        assert r["within_120_days_of_freeze"]["days_to_expiry_at_most"] == 180
+
+    def test_the_90_day_band_is_inside_the_120_day_band_and_ties_to_at_risk_stock(self):
+        r = A.freeze_watch()
+        a, b = r["within_90_days_of_freeze"], r["within_120_days_of_freeze"]
+        assert a["batches"] <= b["batches"] and a["value_inr"] <= b["value_inr"]
+        assert b["batches"] == A.at_risk_stock(180)["total_batches"] and a["batches"] == A.at_risk_stock(150)["total_batches"]
+
+    def test_a_batch_already_inside_the_freeze_is_not_counted_as_watch(self):
+        r = A.freeze_watch()
+        assert all(x["days_to_expiry"] >= 60 for x in r["within_120_days_of_freeze"]["top_batches"])
+
+    def test_regional_imbalance_is_rule_based_and_capacity_is_declared_unavailable(self):
+        r = A.freeze_watch()
+        by = {x["cnf_code"]: x for x in r["imbalance"]}
+        assert by["CF-E01"]["flag"] == "HOLDS MORE THAN ITS SHARE" and by["CF-N02"]["flag"] == "SHORT FOR ITS DEMAND"
+        assert "capacity" in r["godown_capacity"].lower() and "not" in r["godown_capacity"].lower()

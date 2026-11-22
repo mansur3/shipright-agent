@@ -20,7 +20,7 @@ from typing import Optional
 
 MAX_QUESTION_LEN  = 800     # chars
 MAX_ANSWER_LEN    = 4000    # chars — truncate before sending to client
-MAX_TOOL_TRIPS    = 6       # hard cap on model↔tool loops
+MAX_TOOL_TRIPS    = 4       # hard cap on model↔tool loops (project brief: MAX_TRIPS = 4)
 MAX_EVIDENCE_ROWS = 10      # cap evidence items returned to client
 
 # Prompt injection markers

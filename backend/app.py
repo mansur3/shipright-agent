@@ -127,9 +127,11 @@ class _ClaimAuditReq(_BM):
 @app.post("/api/audit-claim")
 def audit_claim_direct(req: _ClaimAuditReq, _: User = _Depends(require_permission("write:validate_claim"))):
     """Check one claim against CO-POL-014. A recommendation for Commercial Finance, never a credit note."""
+    import time as _time
     from agent.claim_checks import ClaimInput, evaluate
     from agent.clean import get_clean, parse_date
 
+    _t0 = _time.perf_counter()
     C = get_clean()
     ci = ClaimInput(stockist=req.stockist_code, batch=req.batch_no, qty=req.qty_claimed, claim_date=parse_date(req.claim_date),
                     claim_type=req.claim_type.strip(), invoice_ref=req.original_invoice_ref or "")
@@ -140,6 +142,7 @@ def audit_claim_direct(req: _ClaimAuditReq, _: User = _Depends(require_permissio
     stk, bat = req.stockist_code.strip().upper(), req.batch_no.strip().upper()
     prior = C.credited_before(stk, bat)
     return {
+        "latency_ms": round((_time.perf_counter() - _t0) * 1000, 1), "tools_called": ["claim_checks.evaluate"], "model_calls": 0,
         "verdict": {**d, "checks_failed": v.reasons},
         "evidence": {
             "records": v.evidence,
@@ -148,6 +151,30 @@ def audit_claim_direct(req: _ClaimAuditReq, _: User = _Depends(require_permissio
             "billed_history": {"total_billed_packs": C.supply.get((stk, bat), 0.0)},
             "prior_claims": {"prior_claimed_packs": sum(p["qty"] for p in prior)},
         },
+    }
+
+
+class _SchemeReq(_BM):
+    stockist_code: str = _Field(min_length=3, max_length=12)
+    sku_code: str = _Field(min_length=3, max_length=12)
+    proposed_order_qty: float = _Field(ge=0, le=10_000_000)
+    scheme_foc_qty: float = _Field(default=0.0, ge=0, le=10_000_000)
+
+
+@app.post("/api/evaluate-scheme")
+def evaluate_scheme(req: _SchemeReq, _: User = _Depends(require_permission("write:scheme_check"))):
+    """R6, policy 4.5: test a proposed scheme order against the stockist's normal flow. Pure code, no model call. BLOCK SCHEME is a
+    recommendation resting on a proxy (no secondary data), which the RSM confirms; the National Sales Manager approves schemes."""
+    import time as _time
+    from agent import analysis
+
+    _t0 = _time.perf_counter()
+    g = analysis.scheme_gate(req.stockist_code, req.sku_code, req.proposed_order_qty, req.scheme_foc_qty)
+    verdict_keys = ("found", "decision", "eligible", "reasons", "clause", "owner", "basis")
+    return {
+        "latency_ms": round((_time.perf_counter() - _t0) * 1000, 1), "tools_called": ["analysis.scheme_gate"], "model_calls": 0,
+        "verdict": {k: g[k] for k in verdict_keys if k in g} if g.get("found") else g,
+        "evidence": {k: v for k, v in g.items() if k not in verdict_keys},
     }
 
 

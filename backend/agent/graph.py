@@ -63,17 +63,19 @@ from langgraph.graph.message import add_messages
 import config as P
 from agent.guardrails import (
     ALLOWED_TOOLS,
+    MAX_TOOL_TRIPS,
     check_input,
     check_tool_call,
     check_trip_budget,
     sanitise_output,
 )
 from agent.llm import get_llm
+from agent.state import AgentState
 from agent.tools import TOOLS
 
 log = logging.getLogger(__name__)
 
-MAX_TRIPS = 6
+MAX_TRIPS = MAX_TOOL_TRIPS  # one cap, defined next to the trip guardrail (4)
 
 # ── System prompt (role context is prepended by the chat router) ──────────────
 _SYSTEM = """\
@@ -114,6 +116,10 @@ HARD RULES — these are non-negotiable:
    In get_stock_cover the key under cnfs_lacking_skus_that_other_cnfs_hold_spare is the C&F that LACKS stock; the spare stock is held by the OTHER C&Fs.
 10. Money figures of different kinds (credited cash, unverifiable claims, stock, revenue) \
    are never added together. Estimates are labelled as estimates with their range.
+12. You never do arithmetic, date calculations, deduplication or stock-cover maths yourself. Every sum, difference, percentage, day count and ratio must be read from a tool    result; if the tool did not give it, say it is not available. Your job is to read, classify and explain what the tools returned.
+13. A proposed scheme order -> check_scheme_eligibility with proposed_order_qty (and scheme_foc_qty). BLOCK SCHEME is a recommendation resting on a proxy, because there is no    secondary data: say so, cite policy 4.5, and say the RSM confirms with the stockist and the National Sales Manager approves schemes. Ambiguous, incomplete or unreadable    input is NEEDS A PERSON, never a guess.
+14. get_at_risk_stock also returns freeze_watch: batches within 120 and 90 days of the 60-day dispatch freeze, and which C&Fs hold more or less than their share of demand.    Godown capacity is not in the data; never state a capacity percentage.
+15. You have at most 4 tool calls for one question. Choose the most specific tool first and do not repeat a call that already returned.
 """
 
 
@@ -134,13 +140,7 @@ def estimate_cost_inr(input_tokens: int, output_tokens: int) -> float:
 
 # ── State ─────────────────────────────────────────────────────────────────────
 
-class State(TypedDict):
-    messages: Annotated[list[AnyMessage], add_messages]
-    trips:    int
-    blocked:  bool
-    error:    Optional[str]
-    flags:    list[str]
-    usage:    dict
+State = AgentState  # defined in agent/state.py
 
 
 # ── Node: input_guard ─────────────────────────────────────────────────────────
@@ -273,6 +273,11 @@ def output_guard(state: State) -> dict:
     """Gate 2 — sanitise LLM output before it leaves the graph."""
     last = state["messages"][-1]
     raw_answer  = getattr(last, "content", "") or ""
+    capped = bool(getattr(last, "tool_calls", None))   # the model still wanted tools, but the trip budget is spent
+    if capped:
+        used = [m.name for m in state["messages"] if isinstance(m, ToolMessage)]
+        raw_answer = (f"I stopped after {MAX_TOOL_TRIPS} tool calls, which is the limit for one question, before I could finish. "
+                      f"Tools run so far: {', '.join(dict.fromkeys(used)) or 'none'}. Please ask a narrower question or one part at a time.")
     raw_evidence = [
         {"tool": m.name, "content": m.content}
         for m in state["messages"]
@@ -280,7 +285,7 @@ def output_guard(state: State) -> dict:
     ]
     clean_answer, clean_ev, new_flags = sanitise_output(raw_answer, raw_evidence)
 
-    flags = list(state.get("flags", [])) + new_flags
+    flags = list(state.get("flags", [])) + new_flags + (["trip_limit"] if capped else [])
     if new_flags:
         log.info("output_guard fired: %s", new_flags)
 
