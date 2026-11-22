@@ -217,23 +217,26 @@ def stock_cover(on: Optional[date] = None) -> dict:
 
 
 def unfilled_shortfall(months: int = 6) -> dict:
-    """Shortage to one month of cover at the last `months` month-ends, split into what spare stock elsewhere could meet (allocation) and the rest."""
+    """Shortage to one month of cover at the last `months` month-ends, split into what spare stock elsewhere could meet (allocation) and the rest.
+
+    Each spare pack can be moved to one C&F only. For every SKU and month-end the shortage that reallocation can fix is therefore the smaller of
+    the total shortage and the total spare stock (stock above one month of a C&F's own outward). A C&F that is short has no spare of its own,
+    so no cell draws on itself. Counting the same spare packs for every short C&F overstated this share (73% instead of 58%)."""
     C = get_clean()
     dates = C.snapshot_dates[-months:]
     alloc = rest = 0.0
     for d in dates:
         for s in C.skus:
+            need_total = spare_total = 0.0
             for c in CNF_CODES:
                 o = C.outward.get((d, c, s), 0.0)
-                if o <= 0:
-                    continue
-                need = max(0.0, P.COVER_FLOOR_MONTHS * o - C.stock.get((d, c, s), 0.0))
-                if need <= 0:
-                    continue
-                spare = sum(max(0.0, C.stock.get((d, c2, s), 0.0) - P.COVER_FLOOR_MONTHS * C.outward.get((d, c2, s), 0.0)) for c2 in CNF_CODES if c2 != c)
-                cov = min(need, spare)
-                alloc += cov * C.pts(s)
-                rest += (need - cov) * C.pts(s)
+                st = C.stock.get((d, c, s), 0.0)
+                if o > 0:
+                    need_total += max(0.0, P.COVER_FLOOR_MONTHS * o - st)
+                spare_total += max(0.0, st - P.COVER_FLOOR_MONTHS * o)
+            cov = min(need_total, spare_total)
+            alloc += cov * C.pts(s)
+            rest += (need_total - cov) * C.pts(s)
     return {"month_ends": [d.isoformat() for d in dates], "shortfall_inr": round(alloc + rest), "allocation_fixable_inr": round(alloc),
             "not_coverable_inr": round(rest), "allocation_fixable_pct": _pct(alloc, alloc + rest)}
 

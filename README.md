@@ -22,7 +22,7 @@ run_local.cmd               # http://127.0.0.1:8000, public demo on, throwaway d
 
 ```
 cd backend
-python -m pytest -q                 # 251 tests
+python -m pytest -q                 # 256 tests
 python -m checks.run_checks         # 20-record check set
 ```
 

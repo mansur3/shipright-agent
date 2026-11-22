@@ -102,7 +102,7 @@ class TestNewTools:
         r = T.get_stock_cover.invoke({})
         by = {x["cnf_code"]: x for x in r["by_cnf"]}
         assert by["CF-N02"]["share_of_stock_pct"] < 3 and by["CF-E01"]["share_of_stock_pct"] > 27
-        assert r["shortage_split_last_6_month_ends"]["allocation_fixable_pct"] == pytest.approx(73, abs=1)
+        assert r["shortage_split_last_6_month_ends"]["allocation_fixable_pct"] == pytest.approx(58, abs=1)
 
     def test_dispatch_quality_only_kolkata(self):
         r = T.get_dispatch_quality.invoke({})

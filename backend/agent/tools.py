@@ -179,8 +179,9 @@ def get_stock_cover(cnf_code: str = "", sku_code: str = "") -> dict:
     lack = r["cnfs_lacking_skus_that_other_cnfs_hold_spare"].get("CF-N02", {})
     by = {x["cnf_code"]: x for x in r["by_cnf"]}
     out = {**r, "shortage_split_last_6_month_ends": sf,
-           "interpretation": (f"{sf['allocation_fixable_pct']}% of the shortfall at the last 6 month-ends (INR {sf['shortfall_inr'] / 1e7:.1f} crore) could be met from stock that other C&Fs hold "
-                              f"above one month of their own outward, so the shortage is an ALLOCATION problem, not a shortage across the network; only {100 - sf['allocation_fixable_pct']:.0f}% could not be met that way. "
+           "interpretation": (f"{sf['allocation_fixable_pct']}% of the shortfall at the last 6 month-ends (INR {sf['shortfall_inr'] / 1e7:.1f} crore) could be met by moving stock that other C&Fs hold "
+                              f"above one month of their own outward (each spare pack counted once), so most of the shortage is an ALLOCATION problem; the other {100 - sf['allocation_fixable_pct']:.0f}% "
+                              f"(INR {sf['not_coverable_inr'] / 1e7:.1f} crore) is stock the network does not have, which allocation cannot fix. "
                               f"Lucknow holds {by['CF-N02']['share_of_stock_pct']}% of national stock for {by['CF-N02']['share_of_outward_pct']}% of outward volume, with {by['CF-N02']['cover_months']} months of cover; "
                               f"Kolkata holds {by['CF-E01']['share_of_stock_pct']}% of stock for {by['CF-E01']['share_of_outward_pct']}% of outward, {by['CF-E01']['cover_months']} months of cover. "
                               f"Lucknow lacks {lack.get('skus_lacking', 0)} SKUs that the other C&Fs hold INR {lack.get('spare_stock_elsewhere_inr', 0) / 1e7:.1f} crore spare of."),

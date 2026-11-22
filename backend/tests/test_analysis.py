@@ -74,9 +74,23 @@ class TestStockCover:
         assert by["CF-E01"]["share_of_stock_pct"] > 27 and by["CF-E01"]["cover_months"] > 3.5
 
     def test_most_of_the_shortage_is_allocation(self):
+        # Each spare pack can be given to one short C&F only. Counting it for every short C&F gave 73%, which overstated
+        # what reallocation can fix (independent recheck, 22 Nov: verification_recheck/recheck12.py). Used once: 58%.
         r = A.unfilled_shortfall(6)
         assert round(r["shortfall_inr"] / 1e7, 2) == 10.18
-        assert r["allocation_fixable_pct"] == pytest.approx(73, abs=1)
+        assert r["allocation_fixable_pct"] == pytest.approx(58, abs=1)
+        assert round(r["allocation_fixable_inr"] / 1e7, 2) == pytest.approx(5.91, abs=0.02)
+        assert round(r["not_coverable_inr"] / 1e7, 2) == pytest.approx(4.27, abs=0.02)
+        assert r["allocation_fixable_inr"] + r["not_coverable_inr"] == pytest.approx(r["shortfall_inr"], abs=2)
+
+    def test_reallocation_never_counts_a_spare_pack_twice(self):
+        r = A.unfilled_shortfall(6)
+        total_spare = 0.0
+        C = A.get_clean()
+        for d in C.snapshot_dates[-6:]:
+            for s in C.skus:
+                total_spare += sum(max(0.0, C.stock.get((d, c, s), 0.0) - A.P.COVER_FLOOR_MONTHS * C.outward.get((d, c, s), 0.0)) for c in A.CNF_CODES) * C.pts(s)
+        assert r["allocation_fixable_inr"] <= total_spare + 1
 
 
 class TestAtRisk:

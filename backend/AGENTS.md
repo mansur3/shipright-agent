@@ -50,7 +50,7 @@ A named person decides anything that moves money. Evidence tiers: T1 policy text
 ```
 pip install -r requirements.txt
 set SANKALP_ADMIN_PASSWORD=<12+ characters>        (PowerShell: $env:SANKALP_ADMIN_PASSWORD="...")
-pytest -q                          # 251 tests, no key needed
+pytest -q                          # 256 tests, no key needed
 python checks/run_checks.py        # 20/20 check-set records
 uvicorn app:app --reload           # http://127.0.0.1:8000, API docs at /api/docs
 ```
