@@ -1,4 +1,4 @@
-﻿"""Vercel entry point for the API. The app lives in backend/ and imports its own packages (agent, auth, routers),
+"""Vercel entry point for the API. The app lives in backend/ and imports its own packages (agent, auth, routers),
 so put backend/ on the path first. Every API route starts with /api, which vercel.json sends here."""
 import sys
 from pathlib import Path
