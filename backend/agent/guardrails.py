@@ -72,6 +72,51 @@ class GuardrailResult:
     flags:    list[str]     = field(default_factory=list)
 
 
+# ── Numeric grounding: every figure in an answer must appear in a tool result ──────────────────────────
+_NUM = re.compile(r"(?<![A-Za-z0-9_.-])(?:INR|Rs\.?|₹)?\s?(\d[\d,]*(?:\.\d+)?)\s?(crore|cr|lakh|L|%)?(?![A-Za-z0-9_-])", re.IGNORECASE)
+_UNIT = {"crore": 1e7, "cr": 1e7, "lakh": 1e5, "l": 1e5, "%": 1.0, "": 1.0}
+
+
+def _evidence_values(texts: list[str]) -> list[float]:
+    vals: list[float] = []
+    for t in texts:
+        for m in re.finditer(r"-?\d[\d,]*(?:\.\d+)?", t):
+            try:
+                vals.append(abs(float(m.group(0).replace(",", ""))))
+            except ValueError:
+                pass
+    return vals
+
+
+def ungrounded_figures(answer: str, evidence_texts: list[str]) -> list[str]:
+    """
+    Deterministic check, no model: return the figures in `answer` that no tool result supports.
+    A figure is supported when some number in the tool results equals it, after applying lakh/crore/% units, to the precision
+    the answer states (a half unit of its last digit, with a small allowance for evidence that is itself rounded).
+    Exempt: day-of-month and list numbers up to 31, and years 2000 to 2100 (a date or an ordinal is not a financial claim).
+    """
+    ev = _evidence_values(evidence_texts)
+    # evidence in rupees may be quoted in lakh or crore, and ratios as percentages
+    out: list[str] = []
+    for m in _NUM.finditer(answer):
+        raw, unit = m.group(1), (m.group(2) or "").lower()
+        digits = raw.replace(",", "")
+        val = float(digits)
+        if not unit and "." not in digits and (val <= 31 or 2000 <= val <= 2100):
+            continue
+        scale = _UNIT[unit]
+        dec = len(digits.split(".")[1]) if "." in digits else 0
+        tol = 0.5 * (10 ** -dec) * scale * 1.0001 + 1e-9
+        target = val * scale
+        if unit == "%":
+            ok = any(abs(e - val) <= tol for e in ev)
+        else:
+            ok = any(abs(e - target) <= tol or abs(e - val) <= 0.5 * (10 ** -dec) * 1.0001 + 1e-9 for e in ev)
+        if not ok:
+            out.append(m.group(0).strip())
+    return list(dict.fromkeys(out))
+
+
 # ── Input guardrails ──────────────────────────────────────────────────────────
 
 def check_input(question: str) -> GuardrailResult:
@@ -131,6 +176,13 @@ def sanitise_output(answer: str, evidence: list[dict]) -> tuple[str, list[dict],
     if len(clean) > MAX_ANSWER_LEN:
         clean = clean[:MAX_ANSWER_LEN] + "\n\n[Response truncated for length]"
         flags.append("output_truncated")
+
+    # Deterministic grounding: any figure that no tool result contains is flagged and the reader is told
+    bad = ungrounded_figures(clean, [str(ev.get("content", "")) for ev in evidence])
+    if bad:
+        flags.append("ungrounded_figures")
+        clean += ("\n\nCheck before use: these figures were not found in the data returned by the tools: " + ", ".join(bad[:6])
+                  + ". Treat them as unverified.")
 
     # Flag if bare INR amounts appear without source citation
     if _HALLUCINATION_RISK.search(clean) and "data]" not in clean:

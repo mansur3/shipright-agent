@@ -55,3 +55,13 @@ def test_polish_falls_back_when_model_unavailable(monkeypatch):
 
     monkeypatch.setattr(cg, "get_llm", boom)
     assert cg._polish("q", "Draft text 12.") == ("Draft text 12.", False)
+
+
+def test_polish_falls_back_when_model_adds_a_new_figure(monkeypatch):
+    monkeypatch.undo()
+
+    class Fake:
+        def invoke(self, _): return type("R", (), {"content": "Your claim is worth INR 4,465, about INR 9,999 with interest."})()
+
+    monkeypatch.setattr(cg, "get_llm", lambda: Fake())
+    assert cg._polish("q", "Claim value INR 4,465.") == ("Claim value INR 4,465.", False)

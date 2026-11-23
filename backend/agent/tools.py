@@ -181,8 +181,11 @@ def get_stock_cover(cnf_code: str = "", sku_code: str = "") -> dict:
     sf = analysis.unfilled_shortfall(6)
     lack = r["cnfs_lacking_skus_that_other_cnfs_hold_spare"].get("CF-N02", {})
     by = {x["cnf_code"]: x for x in r["by_cnf"]}
-    out = {**r, "shortage_split_last_6_month_ends": sf,
-           "interpretation": (f"{sf['allocation_fixable_pct']}% of the shortfall at the last 6 month-ends (INR {sf['shortfall_inr'] / 1e7:.1f} crore) could be met by moving stock that other C&Fs hold "
+    now = analysis.unfilled_shortfall(1)
+    out = {**r, "shortage_split_last_6_month_ends": sf, "shortage_split_latest_month_end": now,
+           "interpretation": (f"Latest month-end only ({now['month_ends'][-1]}): shortfall INR {now['shortfall_inr'] / 1e7:.1f} crore, of which INR {now['allocation_fixable_inr'] / 1e7:.1f} crore "
+                              f"({now['allocation_fixable_pct']}%) could be met by reallocation. The six month-end total below counts a persistent gap once per month, so it is exposure over time, not one amount to recover. "
+                              f"{sf['allocation_fixable_pct']}% of the shortfall at the last 6 month-ends (INR {sf['shortfall_inr'] / 1e7:.1f} crore) could be met by moving stock that other C&Fs hold "
                               f"above one month of their own outward (each spare pack counted once), so most of the shortage is an ALLOCATION problem; the other {100 - sf['allocation_fixable_pct']:.0f}% "
                               f"(INR {sf['not_coverable_inr'] / 1e7:.1f} crore) is stock the network does not have, which allocation cannot fix. "
                               f"Lucknow holds {by['CF-N02']['share_of_stock_pct']}% of national stock for {by['CF-N02']['share_of_outward_pct']}% of outward volume, with {by['CF-N02']['cover_months']} months of cover; "

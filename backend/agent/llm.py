@@ -25,4 +25,6 @@ def get_llm() -> ChatOpenAI:
         api_key=key,
         temperature=0,
         max_tokens=1024,
+        timeout=30,       # seconds per model call: a stalled provider must not hold a request open
+        max_retries=1,    # one automatic retry; the graph itself is capped at 4 tool trips
     )

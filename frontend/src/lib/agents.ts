@@ -157,7 +157,7 @@ export const AGENTS: Agent[] = [
     kind: "Model + tools",
     problem:
       "Leaders want a sourced number in seconds, and the loudest belief wins. The CFO believes a forecasting tool is the fix, but the data shows the shortage is an allocation split and the returns are scheme-pushed.",
-    evidence: "58% of the INR 10.18 cr measured shortfall can be met from stock at other C&Fs (each spare pack counted once); scheme packs are claimed at 13% against 2.35% for others.",
+    evidence: "At the latest month-end INR 1.04 cr of the INR 2.88 cr shortfall can be met from stock at other C&Fs (each spare pack counted once; 36%). Summed over six month-ends it is INR 10.18 cr, 58%, a gap counted once per month; scheme packs are claimed at 13% against 2.35% for others.",
     money: "Shows where money leaks (schemes, cap, allocation) with the file and rows behind each figure.",
     user: "Rohan Mehta, Kavita Rao, Neha Bansal, on demand",
     file: "backend/agent/graph.py",
@@ -184,7 +184,7 @@ export const AGENTS: Agent[] = [
     kind: "Code only",
     problem:
       "The business is short and long at once: Lucknow holds 2% of stock for 19% of outward volume while Kolkata holds 29% for 15%, and Hooghly ships newer batches first. The allocation split is still the FY25 one.",
-    evidence: "INR 10.18 cr shortfall at six month-ends, 58% fillable from other C&Fs (each spare pack counted once); FEFO breaches on 54% to 64% of Hooghly lines against 0% at the other five.",
+    evidence: "INR 2.88 cr shortfall at the latest month-end, 36% fillable from other C&Fs (each spare pack counted once; INR 10.18 cr and 58% summed over six month-ends); FEFO breaches on 54% to 64% of Hooghly lines against 0% at the other five.",
     money: "Protects revenue and future expiry claims: fewer stock-outs, no old lots reaching the 60-day block.",
     user: "Kavita Rao and Vaishali Kapoor, monthly",
     file: "backend/agent/analysis.py",

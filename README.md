@@ -1,4 +1,4 @@
-# Sankalp: claim check and supply view for the Pfizer channel
+﻿# Sankalp: claim check and supply view for the Pfizer channel
 
 Fictional case (FDE Academy, Project 1). Checks every stockist expiry or damage claim against policy and the records, and shows Supply Chain where stock sits in the wrong place. A named person (Commercial Finance) decides every credit; the tool only recommends.
 
@@ -22,8 +22,8 @@ run_local.cmd               # http://127.0.0.1:8000, public demo on, throwaway d
 
 ```
 cd backend
-python -m pytest -q                 # 281 tests
-python -m checks.run_checks         # 20-record check set
+python -m pytest -q                 # 298 tests
+python -m checks.run_checks         # 20-record check set`r`npython -m checks.reconcile_source   # independent recompute from the CSVs, 23 checks
 ```
 
 ## Frontend
@@ -37,3 +37,4 @@ Root Directory `backend`, FastAPI preset, region `bom1`. Environment variables a
 ## Limits
 
 The check-set answers are a draft until the claim owner signs them. Cost per question is estimated from assumed prices in `config.py`. Allocation is inferred from stock and outward because the share table is not in the pack.
+

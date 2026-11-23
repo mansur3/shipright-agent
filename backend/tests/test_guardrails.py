@@ -187,3 +187,34 @@ class TestOutputSanitise:
     def test_unverified_number_flagged(self):
         ans, ev, flags = sanitise_output("Total at risk is INR 50,00,000", [])
         assert "unverified_number_risk" in flags
+
+
+# ── Numeric grounding (deterministic check on model answers) ───────────────────
+from agent.guardrails import ungrounded_figures  # noqa: E402
+
+
+class TestNumericGrounding:
+    EV = [str({"recover_inr": 5152767.39, "claims": 478, "scheme_pack_rate_pct": 13.01, "clause": "CO-POL-014 5.2 (p3)"})]
+
+    def test_grounded_figures_in_lakh_crore_and_percent_pass(self):
+        ans = "INR 51.5 lakh over 478 claims; scheme packs are claimed at 13% (CO-POL-014 5.2)."
+        assert ungrounded_figures(ans, self.EV) == []
+
+    def test_invented_rupee_figure_is_flagged(self):
+        assert "INR 9,99,999" not in ungrounded_figures("Recover INR 62 lakh now.", self.EV)
+        assert ungrounded_figures("Recover INR 62 lakh now.", self.EV) == ["INR 62 lakh"]
+
+    def test_invented_count_and_percent_are_flagged(self):
+        bad = ungrounded_figures("There are 612 claims and the rate is 21%.", self.EV)
+        assert "612" in bad and "21%" in bad
+
+    def test_dates_and_small_list_numbers_are_exempt(self):
+        assert ungrounded_figures("1. Hold them. 2. Review by 30 Sep 2026.", []) == []
+
+    def test_sanitise_output_flags_and_warns_but_does_not_block(self):
+        ans, _ev, flags = sanitise_output("Recover INR 62 lakh.", [{"tool": "get_recovery_summary", "content": self.EV[0]}])
+        assert "ungrounded_figures" in flags and "Check before use" in ans and "INR 62 lakh" in ans
+
+    def test_grounded_answer_gets_no_flag(self):
+        _ans, _ev, flags = sanitise_output("INR 51.5 lakh over 478 claims.", [{"tool": "get_recovery_summary", "content": self.EV[0]}])
+        assert "ungrounded_figures" not in flags

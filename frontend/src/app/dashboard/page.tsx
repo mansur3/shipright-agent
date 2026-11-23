@@ -20,16 +20,19 @@ interface Recovery {
   basis: string;
   by_stockist: StockistRow[];
 }
+interface Register { headline: { annual_cost_saving_inr: { returns_above_1pct_target_last_4_quarters: number } } }
 
 const AXIS = { fill: "#94a3b8", fontSize: 11 };
 
 export default function RecoveryPage() {
   const [d, setD] = useState<Recovery | null>(null);
+  const [reg, setReg] = useState<Register | null>(null);
   const [denied, setDenied] = useState(false);
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    apiGet<Register>("/api/analytics/opportunities").then(setReg).catch(() => setReg(null));
     apiGet<Recovery>("/api/analytics/recovery")
       .then(setD)
       .catch((e: unknown) => {
@@ -58,11 +61,11 @@ export default function RecoveryPage() {
       {/* The headline: money to claim back */}
       <div className="rounded-[10px] border border-line bg-panel p-5 grid gap-5 md:grid-cols-[1.2fr_1fr]">
         <div>
-          <div className="text-[11px] uppercase tracking-wider text-ink3">Credited against a clear rule: can be claimed back</div>
+          <div className="text-[11px] uppercase tracking-wider text-ink3">Credited against a policy rule: potentially recoverable</div>
           <div className="mt-1 text-[40px] leading-none font-bold text-danger">{inr(d.recover_inr, { compact: true })}</div>
           <p className="mt-2 text-[13px] text-ink2 leading-relaxed">
             {num(d.recover_claims)} claims credited over {d.window}, about <strong className="text-ink">{inr(d.recover_per_year_inr, { compact: true })} a year</strong>.
-            Each one broke a written policy rule. Commercial Finance decides whether to recover; nothing moves automatically.
+            T1 claims broke the written policy text; T2 claims probably did and need the owner to confirm. Commercial Finance decides whether to recover; nothing moves automatically.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3 content-center">
@@ -84,7 +87,7 @@ export default function RecoveryPage() {
         <KpiCard label="Hold now: pending claims that fail a rule" value={inr(b.hold.inr, { compact: true })} sub={`${num(b.hold.claims)} claims, stop before credit`} tone="warn" />
         <KpiCard label="Needs a person (already credited)" value={inr(b.review.inr, { compact: true })} sub={`${num(b.review.claims)} claims, partial repeats or no invoice`} tone="warn" />
         <KpiCard label="Cannot be checked" value={inr(b.unverifiable.inr, { compact: true })} sub={`${num(b.unverifiable.claims)} claims, batch older than the data`} />
-        <KpiCard label="Still to leak (estimate)" value="₹2.7–3.4 cr a year" sub="scheme-pushed returns, see Scheme Returns" tone="danger" />
+        <KpiCard label="Scheme-pushed returns above target" value={reg ? inr(reg.headline.annual_cost_saving_inr.returns_above_1pct_target_last_4_quarters, { compact: true }) : "…"} sub="last 4 quarters; a cost, not recoverable cash. See Recovery Register" tone="danger" />
       </div>
       <p className="text-[11px] text-ink3 -mt-2">These are different kinds of rupee and are never added together. {d.basis}</p>
 

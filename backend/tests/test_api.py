@@ -313,3 +313,18 @@ class TestPublicDemo:
         monkeypatch.setenv("SANKALP_PUBLIC_DEMO", "1")
         dbd.ensure_public_demo_users()
         assert client.post("/api/auth/login", json={"username": "demo_cfo", "password": "anything-at-all-123"}).status_code == 401
+
+
+# ── Opportunity register ───────────────────────────────────────────────────────
+class TestOpportunities:
+    def test_requires_auth(self):
+        assert client.get("/api/analytics/opportunities").status_code in (401, 403)
+
+    def test_register_shape_and_tie_to_recovery(self):
+        token = _admin_token()
+        reg = client.get("/api/analytics/opportunities", headers=_auth(token))
+        assert reg.status_code == 200
+        d = reg.json()
+        assert len(d["opportunities"]) == 10 and set(d["classes"]) >= {"confirmed_leakage", "exposure"}
+        rec = client.get("/api/analytics/recovery", headers=_auth(token)).json()
+        assert d["headline"]["credited_cash_to_review_inr"] == rec["recover_inr"]

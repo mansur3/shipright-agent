@@ -141,24 +141,6 @@ export interface ClaimFindingsResponse {
   run_at: string;
 }
 
-// ── Stockist risk ──────────────────────────────────────────────────────────────
-export interface StockistRiskProfile {
-  stockist_code: string;
-  stockist_name: string | null;
-  cnf_code: string | null;
-  risk_score: number;
-  claim_rate_pct: number;
-  total_claim_inr: number;
-  zero_inv_inr: number;
-  dup_credit_inr: number;
-  signals: string[];
-}
-
-export interface StockistRiskResponse {
-  profiles: StockistRiskProfile[];
-  run_at?: string;
-}
-
 // ── User-submitted claims ──────────────────────────────────────────────────────
 export interface UserClaim {
   id: number;

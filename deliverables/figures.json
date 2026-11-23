@@ -1,0 +1,155 @@
+{
+ "headline": {
+  "confirmed_leakage_inr": 1248748.3,
+  "potentially_recoverable_inr": 3904019.09,
+  "credited_cash_to_review_inr": 5152767.39,
+  "cash_to_hold_inr": 2099384.4,
+  "annual_cost_saving_inr": {
+   "free_goods_over_cap_last_4_quarters": 6826434,
+   "returns_above_1pct_target_last_4_quarters": 34479000
+  },
+  "revenue_opportunity_at_pts_inr": 10431814
+ },
+ "opps": {
+  "OPP-01": {
+   "name": "Credited claims that broke written policy text",
+   "class_label": "Confirmed leakage",
+   "amount_inr": 1248748.3,
+   "reference_inr": null,
+   "claims": 104,
+   "priority": 1,
+   "owner": "Commercial Finance (Neha Bansal)",
+   "agent": "Claim Gatekeeper, Recovery Analyst",
+   "confidence": "High",
+   "scope": "104 claims, Apr 2024 to Sep 2026; largest: Royal Distributors (STK0108), Balaji Medical Agencies (STK0129), Apex Distributors (STK0053)"
+  },
+  "OPP-02": {
+   "name": "Credited claims with a probable breach (repeats, out of window)",
+   "class_label": "Potentially recoverable",
+   "amount_inr": 3904019.09,
+   "reference_inr": null,
+   "claims": 374,
+   "priority": 2,
+   "owner": "Commercial Finance (Neha Bansal)",
+   "agent": "Claim Gatekeeper, Recovery Analyst",
+   "confidence": "Medium",
+   "scope": "374 claims, Apr 2024 to Sep 2026"
+  },
+  "OPP-03": {
+   "name": "Pending claims that fail a rule today",
+   "class_label": "Cost avoidance (hold)",
+   "amount_inr": 2099384.4,
+   "reference_inr": null,
+   "claims": 69,
+   "priority": 1,
+   "owner": "Commercial Finance (Neha Bansal)",
+   "agent": "Claim Gatekeeper",
+   "confidence": "High",
+   "scope": "69 pending claims"
+  },
+  "OPP-04": {
+   "name": "Free goods above the 3% cap",
+   "class_label": "Cost saving",
+   "amount_inr": 6826434,
+   "reference_inr": null,
+   "claims": null,
+   "priority": 2,
+   "owner": "CFO (Rohan Mehta), NSM (Arjun Sethi)",
+   "agent": "Scheme Order Gate",
+   "confidence": "High on the excess; Medium on avoidability (approved exceptions may exist)",
+   "scope": "last 4 quarters: FY26Q3, FY26Q4, FY27Q1, FY27Q2; cumulative since FY25Q3: INR 3.95 crore"
+  },
+  "OPP-05": {
+   "name": "Expiry returns pushed by quarter-end schemes",
+   "class_label": "Cost saving",
+   "amount_inr": 34479000,
+   "reference_inr": null,
+   "claims": null,
+   "priority": 1,
+   "owner": "NSM (Arjun Sethi), CFO (Rohan Mehta)",
+   "agent": "Scheme Order Gate, Supply and FEFO Watcher",
+   "confidence": "Medium: size depends on the 1% target; direction is High",
+   "scope": "last 4 quarters FY26Q3 to FY27Q2: logged INR 5.46 crore vs target INR 2.01 crore"
+  },
+  "OPP-06": {
+   "name": "Stock sits in the wrong place: short supply a reallocation could serve",
+   "class_label": "Revenue opportunity",
+   "amount_inr": 10431814,
+   "reference_inr": null,
+   "claims": null,
+   "priority": 2,
+   "owner": "Supply Chain (Kavita Rao), Demand Planning (Vaishali Kapoor)",
+   "agent": "Supply and FEFO Watcher",
+   "confidence": "Medium: depends on the outward definition and on the stock being movable (shelf life, transport)",
+   "scope": "month-end 2026-09-30, all C&Fs; Lucknow holds 2.4% of stock for 19.0% of outward"
+  },
+  "OPP-07": {
+   "name": "Hooghly (Kolkata) ships newer batches before older ones",
+   "class_label": "Operational risk",
+   "amount_inr": null,
+   "reference_inr": 85298806,
+   "claims": null,
+   "priority": 3,
+   "owner": "Supply Chain (Kavita Rao)",
+   "agent": "Supply and FEFO Watcher",
+   "confidence": "High on the breach; the loss is not sized because no stock is within 180 days of expiry yet",
+   "scope": "CF-E01 Kolkata, 1713 of 2898 lines, INR 8.53 crore shipped out of order"
+  },
+  "OPP-08": {
+   "name": "Claims that need a person before any decision",
+   "class_label": "Exposure, not leakage",
+   "amount_inr": null,
+   "reference_inr": 14405887.84,
+   "claims": 800,
+   "priority": 3,
+   "owner": "Commercial Finance (Neha Bansal)",
+   "agent": "Claims Mailbox Triage, Claim Gatekeeper",
+   "confidence": "High that they need review; not sized as recoverable",
+   "scope": "800 claims"
+  },
+  "OPP-09": {
+   "name": "Claims on batches older than the data",
+   "class_label": "Exposure, not leakage",
+   "amount_inr": null,
+   "reference_inr": 8544541.16,
+   "claims": 971,
+   "priority": 3,
+   "owner": "Commercial Finance (Neha Bansal)",
+   "agent": "Recovery Analyst",
+   "confidence": "High that they cannot be checked",
+   "scope": "971 claims"
+  },
+  "OPP-10": {
+   "name": "Dispatch below 60% residual shelf life",
+   "class_label": "Operational risk",
+   "amount_inr": null,
+   "reference_inr": 234980798,
+   "claims": null,
+   "priority": 3,
+   "owner": "Supply Chain (Kavita Rao)",
+   "agent": "Supply and FEFO Watcher",
+   "confidence": "Medium",
+   "scope": "all six C&Fs, 5% to 6% of lines each"
+  }
+ },
+ "scheme": {
+  "scheme_pack_rate_pct": 13.01,
+  "other_pack_rate_pct": 2.35,
+  "multiple": 5.53
+ },
+ "lucknow": {
+  "share_of_stock_pct": 2.4,
+  "share_of_outward_pct": 19.0,
+  "cover_months": 0.2
+ },
+ "shortfall_latest": {
+  "month_ends": [
+   "2026-09-30"
+  ],
+  "shortfall_inr": 28827929,
+  "allocation_fixable_inr": 10431814,
+  "not_coverable_inr": 18396116,
+  "allocation_fixable_pct": 36.2
+ },
+ "per_year": 2061106.96
+}

@@ -700,6 +700,9 @@ def _polish(question: str, draft: str) -> tuple[str, bool]:
         return draft, False
     if not out or not _numbers(draft) <= _numbers(out):
         return draft, False
+    added = _numbers(out) - _numbers(draft)
+    if any(len(x) > 1 for x in added):   # a new figure (not just a list number like 1 or 2) means the model added a fact
+        return draft, False
     return out, True
 
 

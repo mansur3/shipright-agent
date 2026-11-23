@@ -235,6 +235,12 @@ def get_recovery(_: User = Depends(require_permission("read:dashboard"))):
     return {k: r[k] for k in ("buckets", "recover_inr", "recover_claims", "recover_per_year_inr", "window", "basis")} | {"by_stockist": r["by_stockist"][:20]}
 
 
+@router.get("/opportunities")
+def get_opportunities(_: User = Depends(require_permission("read:dashboard"))):
+    """The opportunity register: every money finding, its class, evidence, formula, owner and the agent that found it. Figures are computed in code."""
+    from agent import opportunities
+    return opportunities.build()
+
 @router.get("/recovery/claims")
 def get_recovery_claims(
     bucket: str = Query(default="", description="recover_t1, recover_t2 or hold"),
