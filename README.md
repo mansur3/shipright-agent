@@ -38,6 +38,8 @@ domain: [pfizer-sankalp-ai-agent.vercel.app](https://pfizer-sankalp-ai-agent.ver
 username: admin
 password: Sr-Z5GDVF0KFJxz
 
+Github link: [github.com/mansur3/shipright-agent.git](https://github.com/mansur3/shipright-agent.git)
+
 ## Limits
 
 The check-set answers are a draft until the claim owner signs them. Cost per question is estimated from assumed prices in `config.py`. Allocation is inferred from stock and outward because the share table is not in the pack.
