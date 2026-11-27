@@ -1,4 +1,4 @@
-"""Builds the five ShipRight Agent architecture diagrams as editable Excalidraw files.
+"""Builds the five Sankalp Agent architecture diagrams as editable Excalidraw files.
 Everything drawn here is read from the code as implemented (see MULTI_AGENT_ARCHITECTURE_AUDIT.md); figures come from the live
 opportunity register so the diagrams, the app and the deck agree.
 
@@ -26,7 +26,7 @@ def inr(v):
 # ───────────────────────────────────────────── 1. system architecture
 def d1():
     s = Scene(1)
-    s.title(40, 24, "1. ShipRight Agent: overall system architecture", "Original client data -> clean data layer -> 7 agents and code engines -> validation -> API -> dashboard -> named decision maker")
+    s.title(40, 24, "1. Sankalp Agent: overall system architecture", "Original client data -> clean data layer -> 7 agents and code engines -> validation -> API -> dashboard -> named decision maker")
     # column 1: data
     s.box("d1", 40, 130, 300, 190, "data", "Client data pack (7 CSVs, read-only)",
           "primary_sales 93,809 rows\nexpiry_claims 4,526\nbatch_master 663\ncnf_stock_snapshot 5,015\nsku_master 36 · stockist_master 156\nclaim_emails 30", label="DATA SOURCE")
@@ -55,7 +55,7 @@ def d1():
     for i, (k, n, sub) in enumerate(names):
         s.box(k, 1140, 130 + i * 92, 380, 78, "agent", n, sub, tsize=15, bsize=11)
     s.box("v1", 1140, 790, 380, 200, "ok", "Validation layer (code)",
-          "Input, tool and output guardrails · 4-trip cap · numeric grounding check on every Ask answer · reply-wording number guard · evidence tiers T1 to T4 · 20-record check set (20/20) · independent source reconciliation (23/23) · 298 backend tests", label="VALIDATION")
+          "Input, tool and output guardrails · 12-trip cap · numeric grounding check on every Ask answer · reply-wording number guard · evidence tiers T1 to T4 · 20-record check set (20/20) · independent source reconciliation (23/23) · 298 backend tests", label="VALIDATION")
     s.box("x1", 1140, 1020, 380, 100, "ext", "OpenRouter LLM API", "gpt-4o-mini, temperature 0. Reads questions, picks tools, words replies. Never writes a figure.", label="EXTERNAL")
     # column 5: frontend + users
     s.box("f1", 1590, 130, 330, 430, "ok", "Executive dashboard (Next.js, static export)",
@@ -104,7 +104,7 @@ def d2():
          "cleaned claims and invoices", "T1, T2, hold, review, unverifiable buckets; by stockist; stored in SQLite",
          "claim checker", "Claim Gatekeeper rules", "Opportunity Register, Recovery page, Recovery List")
     card(s, "a4", xs[3], y1, "agent", "Ask Analyst", "MODEL + 11 TOOLS · backend/agent/graph.py (LangGraph)",
-         "answers a leader's question with a sourced figure: input guard, model picks a tool, tool guard, tools, output guard (max 4 trips)",
+         "answers a leader's question with a sourced figure: input guard, model picks a tool, tool guard, tools, output guard (max 12 trips)",
          "question text (800 chars max)", "answer + evidence + flags + usage; ungrounded figures flagged",
          "11 read-only tools: lookup_batch, validate_claim, get_recovery_summary, get_stock_cover, get_dispatch_quality, get_scheme_cap, get_fill_rate, ...", "user, guardrails",
          "analysis and claim engines; OpenRouter gpt-4o-mini")
@@ -130,7 +130,7 @@ def d2():
     s.arrow("a4", "b3", "tool calls", pts=[(1735, 380), (1735, 440), (1245, 440), (1245, 500)], lx=-100)
     s.arrow("a4", "b4", None, pts=[(1850, 380), (1850, 500)])
     s.text(40, 780, "Reconciliation of disagreements: there is no agent-to-agent negotiation. Every rule is written once (claim_checks.py, enforced by tests/test_rules.py), so agents cannot disagree on a verdict.\n"
-                    "No cross-agent LLM handoff exists. Cheapest-first routing: Intake Assistant tries keywords before it calls the model. Ask Analyst is capped at 4 tool trips.", 13, "#495057")
+                    "No cross-agent LLM handoff exists. Cheapest-first routing: Intake Assistant tries keywords before it calls the model. Ask Analyst is capped at 12 tool trips.", 13, "#495057")
     s.legend(40, 850)
     s.save(HERE / "02_multi_agent_collaboration.excalidraw")
 
@@ -244,7 +244,7 @@ def d5():
     msg("FastAPI", "Frontend", "recommendation (latency, tools, model_calls = 0)", dashed=True)
     msg("Frontend", "Human decider", "Commercial Finance decides the credit", color="#e8590c")
     y += 14
-    sec("B. Ask Analyst: POST /api/chat/ask (sequential, at most 4 model trips)", "#6741d9")
+    sec("B. Ask Analyst: POST /api/chat/ask (sequential, at most 12 model trips)", "#6741d9")
     msg("User", "Frontend", "type a question")
     msg("Frontend", "FastAPI", "POST /api/chat/ask (role check, rate limit)")
     msg("FastAPI", "LangGraph agent", "run_question")
@@ -253,7 +253,7 @@ def d5():
     msg("LangGraph agent", "Guardrails", "tool_guard: allow-list, args, trip budget")
     msg("LangGraph agent", "Tools and claim checker", "run_tools (one after another)")
     msg("Tools and claim checker", "LangGraph agent", "tool result (code-calculated)", dashed=True)
-    s.text(830, y - 8, "repeat model <-> tools until an answer, max 4 trips", 11, "#e8590c")
+    s.text(830, y - 8, "repeat model <-> tools until an answer, max 12 trips", 11, "#e8590c")
     y += 26
     msg("LangGraph agent", "LLM (OpenRouter)", "model call: explain the result", color="#6741d9")
     msg("LangGraph agent", "Guardrails", "output_guard: scrub + numeric grounding check")

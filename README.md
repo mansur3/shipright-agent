@@ -34,7 +34,10 @@ python -m checks.run_checks         # 20-record check set`r`npython -m checks.re
 
 Root Directory `backend`, FastAPI preset, region `bom1`. Environment variables are listed in `backend/.env.example`; set `SANKALP_PUBLIC_DEMO=1` for the panel demo (read roles only, never admin). Full steps: the Step 9 section of `verification/11_qa_and_deploy.md` in the working pack.
 
+domain: [pfizer-sankalp-ai-agent.vercel.app](https://pfizer-sankalp-ai-agent.vercel.app/)
+username: admin
+password: Sr-Z5GDVF0KFJxz
+
 ## Limits
 
 The check-set answers are a draft until the claim owner signs them. Cost per question is estimated from assumed prices in `config.py`. Allocation is inferred from stock and outward because the share table is not in the pack.
-
