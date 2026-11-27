@@ -21,3 +21,6 @@ frontend/.next-build/
 
 .vercel
 .env*
+
+# local LangSmith key file
+langsmith.txt

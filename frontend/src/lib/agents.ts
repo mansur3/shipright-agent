@@ -174,7 +174,7 @@ export const AGENTS: Agent[] = [
     ],
     edges: [
       { from: "in", to: "ig" }, { from: "ig", to: "ref", label: "blocked" }, { from: "ig", to: "m", label: "allowed" },
-      { from: "m", to: "tg", label: "tool call" }, { from: "tg", to: "rt" }, { from: "rt", to: "m", loop: 34, label: "up to 4 trips" },
+      { from: "m", to: "tg", label: "tool call" }, { from: "tg", to: "rt" }, { from: "rt", to: "m", loop: 34, label: "up to 12 trips" },
       { from: "m", to: "og", loop: 78, label: "answer" }, { from: "og", to: "out" },
     ],
   },

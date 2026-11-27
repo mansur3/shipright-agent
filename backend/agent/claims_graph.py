@@ -92,7 +92,7 @@ log = logging.getLogger(__name__)
 
 NL = chr(10)
 
-MAX_TRIPS = 4
+MAX_TRIPS = 12
 
 # ── Required fields for claim creation, in order of asking ────────────────────
 CLAIM_FIELDS = [

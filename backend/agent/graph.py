@@ -75,7 +75,7 @@ from agent.tools import TOOLS
 
 log = logging.getLogger(__name__)
 
-MAX_TRIPS = MAX_TOOL_TRIPS  # one cap, defined next to the trip guardrail (4)
+MAX_TRIPS = MAX_TOOL_TRIPS  # one cap, defined next to the trip guardrail (12)
 
 # ── System prompt (role context is prepended by the chat router) ──────────────
 _SYSTEM = """\
@@ -119,7 +119,7 @@ HARD RULES — these are non-negotiable:
 12. You never do arithmetic, date calculations, deduplication or stock-cover maths yourself. Every sum, difference, percentage, day count and ratio must be read from a tool    result; if the tool did not give it, say it is not available. Your job is to read, classify and explain what the tools returned.
 13. A proposed scheme order -> check_scheme_eligibility with proposed_order_qty (and scheme_foc_qty). BLOCK SCHEME is a recommendation resting on a proxy, because there is no    secondary data: say so, cite policy 4.5, and say the RSM confirms with the stockist and the National Sales Manager approves schemes. Ambiguous, incomplete or unreadable    input is NEEDS A PERSON, never a guess.
 14. get_at_risk_stock also returns freeze_watch: batches within 120 and 90 days of the 60-day dispatch freeze, and which C&Fs hold more or less than their share of demand.    Godown capacity is not in the data; never state a capacity percentage.
-15. You have at most 4 tool calls for one question. Choose the most specific tool first and do not repeat a call that already returned.
+15. You have at most 12 tool calls for one question. Choose the most specific tool first and do not repeat a call that already returned.
 """
 
 

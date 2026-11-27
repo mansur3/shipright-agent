@@ -3,6 +3,7 @@ uvicorn==0.54.0
 langgraph==1.2.22
 langchain-core==1.8.0
 langchain-openai==1.8.0
+langsmith==0.15.0
 python-dotenv==1.2.4
 sqlmodel==0.0.50
 bcrypt==5.0.0

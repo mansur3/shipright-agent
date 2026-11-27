@@ -59,7 +59,7 @@ A named person decides anything that moves money. Evidence tiers: T1 policy text
 
 Not implemented as a hard rule, and why: R6 closing stock cannot be measured (no secondary data), so BLOCK SCHEME rests on months of normal purchase held above the stockist's flow and is confirmed by the RSM; R7 godown capacity (a godown "at 96%") is not in the data, so no capacity figure is ever stated.
 
-The model loop is capped at 4 tool trips (`guardrails.MAX_TOOL_TRIPS`, shared by `graph.MAX_TRIPS`); at the cap the user gets a plain answer naming the tools already run. State is in `agent/state.py`. `POST /api/audit-claim` and `POST /api/evaluate-scheme` run no model and return `latency_ms`, `tools_called` and `model_calls`.
+The model loop is capped at 12 tool trips (`guardrails.MAX_TOOL_TRIPS`, shared by `graph.MAX_TRIPS`); at the cap the user gets a plain answer naming the tools already run. State is in `agent/state.py`. `POST /api/audit-claim` and `POST /api/evaluate-scheme` run no model and return `latency_ms`, `tools_called` and `model_calls`.
 
 ## How to run
 
